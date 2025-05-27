@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+flags=()
+text="временная заглушка"
+
+for arg in "$@"; do
+    if [[ "$arg" == --* ]]; then
+        flags+=("$arg")
+    fi
+done
+
+if git diff --cached --quiet; then
+    echo "Индекс пуст. Нечего коммитить."
+    exit 0
+else
+    echo "Есть изменения в индексе. Создаём коммит."
+    git commit "${flags[@]}" -m "$text"
+fi

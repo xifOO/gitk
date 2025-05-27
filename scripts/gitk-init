@@ -1,0 +1,60 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+CONFIG_FILE="$HOME/.gitk_config.env"
+
+echo "Добро пожаловать в GitK 
+
+Чтобы использовать генерацию сообщений коммитов с помощью ChatGPT,
+необходимо указать ваш OpenAI API ключ.
+
+Ключ будет сохранён локально в:
+    $CONFIG_FILE
+
+Этот файл:
+  - будет доступен только вам (права доступа 600)
+  - НЕ будет отправлен ни в какие репозитории
+  - может быть удалён или изменён в любой момент
+
+Вы также можете использовать переменную окружения OPENAI_API_KEY вместо этого шага.
+"
+
+if [ "$1" == "--clear" ]; then
+    if [ -f "$CONFIG_FILE" ]; then
+        read -p "Вы точно хотите удалить сохраненный ключ? (y/n): " answer
+        if [[ "$answer" =~ ^[yY]$ ]]; then
+            rm "$CONFIG_FILE"
+            echo "Ключ удалён."
+        else 
+            echo "Ключ не был очищен."
+        fi
+    else
+        echo "У вас нет сохраненного ключа."
+    fi
+    exit 0
+fi
+
+
+if [ "$1" != "--force" ]; then
+    read -p "Продолжить и ввести ключ? (y/n): " answer
+    if [[ ! "$answer" =~ ^[yY]$ ]]; then
+        echo "Вы можете использовать переменную окружения OPENAI_API_KEY вместо этого шага"
+        exit 0
+    fi
+
+    if [ -f "$CONFIG_FILE" ]; then
+        echo "Файл конфигурации уже существует."
+        read -p "Хотите перезаписать ключ? (y/n): " overwrite
+        if [[ ! "$overwrite" =~ ^[yY]$ ]]; then
+            echo "Ключ не будет изменён. Вы можете использовать gitk help для ознакомления с командами."
+            exit 0
+        fi
+    fi
+fi
+
+read -s -p "Введите ваш OpenAI API ключ: " OPENAI_API_KEY
+echo
+echo "OPENAI_API_KEY=$OPENAI_API_KEY" > "$CONFIG_FILE"
+chmod 600 "$CONFIG_FILE"
+echo -e "\nКлюч успешно сохранён в $CONFIG_FILE"

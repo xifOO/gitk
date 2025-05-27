@@ -7,7 +7,7 @@ remote_count=${#remotes[@]}
 
 if [ "$remote_count" -eq 0 ]; then
     echo "Нет настроенных удаленных репозиториев (remotes)."
-    exit 1
+    exit 0
 elif [ "$remote_count" -eq 1]; then
     remote=${remotes[0]}
     echo "Используется remote: $remote"
