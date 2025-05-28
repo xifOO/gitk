@@ -3,18 +3,29 @@
 set -e -o pipefail
 
 flags=()
-text="временная заглушка"
-
 for arg in "$@"; do
     if [[ "$arg" == --* ]]; then
         flags+=("$arg")
     fi
 done
 
+
 if git diff --cached --quiet; then
     echo "Индекс пуст. Нечего коммитить."
     exit 0
 else
-    echo "Есть изменения в индексе. Создаём коммит."
-    git commit "${flags[@]}" -m "$text"
+    echo "Есть изменения в индексе. Генерируем коммит."
+
+    diff=$(git diff --cached)
+
+    commit_message=$(echo "$diff" | python3 "$(dirname "$0")/../generator.py")
+
+    tmpfile=$(mktemp)
+    echo "$commit_message" > "$tmpfile"
+
+    echo -e "📦 Коммит:\n----------------------\n$commit_message\n----------------------"
+
+    git commit "${flags[@]}" -F "$tmpfile"
+
+    rm "$tmpfile"
 fi
