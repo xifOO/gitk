@@ -6,12 +6,14 @@ if [ "$#" -gt 0 ]; then
     echo "Добавляю указанные файлы: $@"
     git add "$@"
 elif [ "$#" -eq 1 ] && [ "$1" = "." ]; then
-    echo "Добавляю все изменени (git add .)" 
+    echo "Добавляю все изменения (git add .)" 
     git add .
 else 
     echo "Не переданы файлы для добавления в индекс."
+    exit 0
 fi
 
 echo -e "\nФайлы в индексе:"
 git diff --cached --name-only
+
 
