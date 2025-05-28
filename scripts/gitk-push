@@ -8,15 +8,14 @@ remote_count=${#remotes[@]}
 if [ "$remote_count" -eq 0 ]; then
     echo "Нет настроенных удаленных репозиториев (remotes)."
     exit 0
-elif [ "$remote_count" -eq 1]; then
+elif [ "$remote_count" -eq 1 ]; then 
     remote=${remotes[0]}
     echo "Используется remote: $remote"
 else 
     echo "Найдено несколько remotes:"
     for i in "${!remotes[@]}"; do 
-        echo "$((i + 1)) ${remotes[@i]}"
+        echo "$((i + 1)) ${remotes[$i]}" 
     done
-
 
     while true; do
         read -p "Выберите номер remote для push: " index
@@ -30,14 +29,18 @@ else
     done
 fi
 
-default_branch=$(git remote show origin | grep 'HEAD branch' | awk '{print $NF}')
+default_branch=$(git remote show "$remote" | grep 'HEAD branch' | awk '{print $NF}')
 
 flags=()
+
+remote=""
 branch=""
 
 for arg in "$@"; do
     if [[ "$arg" == --* ]]; then
         flags+=("$arg")
+    elif [ -z "$remote" ]; then
+        remote="$arg"
     elif [ -z "$branch" ]; then
         branch="$arg"
     fi
@@ -48,11 +51,8 @@ if [ -z "$branch" ]; then
     branch=${branch:-$default_branch}
     echo "Ветка не указана. Используем: $branch"
 else
-    branch=$1
     echo "Используем ветку: $branch"
 fi
 
 echo "git push $remote $branch ${flags[*]}"
 git push "$remote" "$branch" "${flags[@]}"
-
-
