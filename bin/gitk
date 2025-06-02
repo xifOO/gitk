@@ -1,11 +1,12 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "$0")"/../scripts && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")/../scripts" && pwd)"
+
 CMD="$1"
 shift
 
 if [ -z "$CMD" ]; then
-    echo "Команда не указана. Пример использования: gitk init"
+    echo "Команда не указана. Пример использования: gitk commit"
     exit 1
 fi
 
@@ -13,9 +14,10 @@ TARGET="$SCRIPT_DIR/gitk-$CMD"
 
 if [ ! -f "$TARGET" ]; then
     echo "Неизвестная команда: $CMD"
-    echo "Доступные команды: $(ls "$SCRIPT_DIR" | sed 's/^gitk-//' | tr '\n' ' ')"
+    echo -n "Доступные команды: "
+    ls "$SCRIPT_DIR"/gitk-* 2>/dev/null | sed 's/.*gitk-//' | tr '\n' ' '
+    echo
     exit 1
 fi
-
 
 exec "$TARGET" "$@"
