@@ -36,48 +36,73 @@ def clean_diff(diff: str) -> str:
     return diff
 
 
-def create_commit_message_prompt(diff: str) -> str:
-    return  f"""Write ONLY a single line commit message for this git diff.
+def create_commit_message_prompt(diff: str, detailed: bool) -> str:
+    if detailed:
+        return f"""Write a git commit message with title and detailed body for this git diff.
 
-    Requirements:
-    - Use format: type(scope): brief description
-    - Types: feat, fix, docs, style, refactor, test, chore
-    - Maximum 50 characters total
-    - No explanations, no markdown, no extra text
-    - Just the commit message line
+                Requirements:
+                - First line: type(scope): brief description (max 50 chars)
+                - Second line: empty
+                - Body: detailed explanation of changes (max 72 chars per line)
+                - Types: feat, fix, docs, style, refactor, test, chore
+                - Use present tense and imperative mood
 
-    Examples:
-    feat(auth): add login validation
-    fix(api): handle null user data
-    docs(readme): update setup guide
+                Format:
+                feat(scope): brief description
 
-    Git diff:
-    {diff}
+                - Detailed point 1
+                - Detailed point 2
+                - What was changed and why
 
-    Commit message:"""
+                Git diff:
+                {diff}
+
+                Commit message:"""
+    else:
+        return f"""Write ONLY a single line commit message for this git diff.
+
+                Requirements:
+                - Use format: type(scope): brief description
+                - Types: feat, fix, docs, style, refactor, test, chore
+                - Maximum 50 characters total
+                - No explanations, no markdown, no extra text
+                - Just the commit message line
+
+                Examples:
+                feat(auth): add login validation
+                fix(api): handle null user data
+                docs(readme): update setup guide
+
+                Git diff:
+                {diff}
+
+                Commit message:"""
 
 
-def generate_commit_message(diff: str) -> str:
+def generate_commit_message(diff: str, detailed: bool) -> str:
     try:
         api_key = get_api_key()
         cleaned_diff = clean_diff(diff)
-        prompt = create_commit_message_prompt(cleaned_diff)
+        prompt = create_commit_message_prompt(cleaned_diff, detailed)
         
+        system_content = "You write single-line git commit messages. Respond with ONLY the commit message, no explanations." if not detailed else "You are a senior software engineer who writes excellent, detailed Git commit messages following conventional commit standards."
+        temperature = 0.4 if detailed else 0.3
+        max_tokens = 200 if detailed else 60
 
         payload = {
             "model": "qwen/qwen-2.5-72b-instruct:free", 
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are a senior software engineer who writes excellent, concise Git commit messages following conventional commit standards."
+                    "content": system_content
                 },
                 {
                     "role": "user", 
                     "content": prompt
                 }
             ],
-            "temperature": 0.4,  
-            "max_tokens": 150,  
+            "temperature": temperature,  
+            "max_tokens": max_tokens,  
         }
 
         response = requests.post(
@@ -122,7 +147,8 @@ def main():
             print("Или: git diff HEAD~1 | python commit_generator.py", file=sys.stderr)
             sys.exit(1)
         diff = sys.stdin.read()
-        commit_message = generate_commit_message(diff)
+        detailed: bool = "--detailed" in sys.argv
+        commit_message = generate_commit_message(diff, detailed)
 
         print(commit_message)
 

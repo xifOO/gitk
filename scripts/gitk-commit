@@ -3,10 +3,12 @@
 set -e -o pipefail
 
 flags=()
+detailed=false
 for arg in "$@"; do
-    if [[ "$arg" == --* ]]; then
-        flags+=("$arg")
-    fi
+    case "$arg" in
+        --detailed) detailed=true ;;
+        --*) flags+=("$arg") ;;
+    esac
 done
 
 
@@ -18,14 +20,23 @@ else
 
     diff=$(git diff --cached)
 
-    commit_message=$(echo "$diff" | python3 "$(dirname "$0")/../generator.py")
+    if [[ "$detailed" == "true" ]]; then
+        commit_message=$(echo "$diff" | python3 "$(dirname "$0")/../generator.py" --detailed)
+    else
+        commit_message=$(echo "$diff" | python3 "$(dirname "$0")/../generator.py")
+    fi
 
     tmpfile=$(mktemp)
     echo "$commit_message" > "$tmpfile"
 
-    echo -e "📦 Коммит:\n----------------------\n$commit_message\n----------------------"
-
-    git commit "${flags[@]}" -F "$tmpfile"
+    echo -e "Коммит:\n----------------------\n$commit_message\n----------------------"
+    echo $detailed
+    if [[ "$detailed" == "true" ]]; then
+        git commit -m "$title" -m "$body" "${flags[@]}"
+        echo "git commit -m "$title" -m "$body" "${flags[@]}""
+    else
+        git commit -m "$title" "${flags[@]}"
+    fi 
 
     rm "$tmpfile"
 fi
