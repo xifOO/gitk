@@ -54,5 +54,4 @@ else
     echo "Используем ветку: $branch"
 fi
 
-echo "git push $remote $branch ${flags[*]}"
 git push "$remote" "$branch" "${flags[@]}"
