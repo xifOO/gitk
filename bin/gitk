@@ -1,9 +1,41 @@
 #!/bin/bash
 
+set -e -o pipefail
+
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")/../scripts" && pwd)"
+LOCALE_DIR="$(cd "$(dirname "$(readlink -f "$0")")/../locale" && pwd)"
+CONFIG_FILE="$HOME/.gitk_config.env"
+
+LANGUAGE="en"
+if [[ -f "$CONFIG_FILE" ]]; then
+    source "$CONFIG_FILE"
+fi
+
+HELP_FILE="$LOCALE_DIR/$LANGUAGE/help.txt"
 
 CMD="$1"
 shift
+
+show_help() {
+    if [[ -f "$HELP_FILE" ]]; then
+        cat "$HELP_FILE"
+    else
+        echo "Help file not found: $HELP_FILE"
+    fi
+}
+
+if [[ "$CMD" == "help" ]]; then
+    if [[ $# -gt 0 ]]; then
+        SECTION="$1"
+        awk -v RS= '/^\# \['"$SECTION"'\]/{ print; exit }' "$HELP_FILE" || {
+            echo "Нет справки по команде '$SECTION'"
+            exit 1
+        }
+    else
+        show_help
+    fi
+    exit 0
+fi
 
 if [ -z "$CMD" ]; then
     echo "Команда не указана. Пример использования: gitk commit"
@@ -17,11 +49,7 @@ if [ -f "$TARGET" ]; then
 fi
 
 if [[ "$CMD" == "--help" || "$CMD" == "-h" ]]; then
-    echo "gitk — оболочка над git с поддержкой кастомных команд"
-    echo "Пример: gitk commit, gitk push"
-    echo "Доступные команды:"
-    ls "$SCRIPT_DIR"/gitk-* 2>/dev/null | sed 's/.*gitk-//' | tr '\n' ' '
-    echo
+    show_help
     exit 0
 fi
 

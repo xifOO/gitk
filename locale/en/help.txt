@@ -1,0 +1,55 @@
+Usage:
+  gitk <command> [options]
+
+Available commands:
+  init        Initializes a new git repository
+  add         Adds specified files to the staging area
+  commit      Generates a commit message using an AI model
+  push        Pushes changes to a remote repository
+  help        Displays this help message
+
+Regular git commands are also supported if not overridden.
+
+[init]
+Description:
+  Initializes a new git repository in the current directory.
+
+[add]
+Description:
+  Adds the specified files to the staging area.
+
+Examples:
+  gitk add file1.txt file2.py
+  gitk add .         # adds everything
+
+After adding, a list of staged files will be shown.
+
+[commit]
+Description:
+  Generates a commit message based on staged changes,
+  using an AI-powered message generator.
+
+Options:
+  --detailed         Use detailed commit message generation
+  --yes, --no-confirm  Skip confirmation before committing
+  --author, --amend and other Git flags are also supported
+
+[push]
+Description:
+  Pushes the current branch to a remote repository.
+
+Features:
+  - Prompts for remote and branch if not specified
+  - Defaults to origin if only one remote is configured
+
+Examples:
+  gitk push
+  gitk push origin dev
+
+[help]
+Description:
+  Shows this help message. You can specify a command:
+
+Examples:
+  gitk help
+  gitk help commit
