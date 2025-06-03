@@ -30,8 +30,9 @@ Description:
   using an AI-powered message generator.
 
 Options:
-  --detailed         Use detailed commit message generation
+  --detailed           Use detailed commit message generation
   --yes, --no-confirm  Skip confirmation before committing
+  --split              Create separate commits for each staged file
   --author, --amend and other Git flags are also supported
 
 [push]
