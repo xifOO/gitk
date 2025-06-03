@@ -33,22 +33,26 @@ default_branch=$(git remote show "$remote" | grep 'HEAD branch' | awk '{print $N
 
 flags=()
 
-remote=""
+user_remote=""
 branch=""
 
 for arg in "$@"; do
     if [[ "$arg" == --* ]]; then
         flags+=("$arg")
-    elif [ -z "$remote" ]; then
-        remote="$arg"
+    elif [ -z "$user_remote" ]; then
+        user_remote="$arg"
     elif [ -z "$branch" ]; then
         branch="$arg"
     fi
 done
 
+if [ -n "$user_remote" ]; then
+    remote="$user_remote"
+fi
+
+read -p "Введите имя ветки для push [по умолчанию: $default_branch]: " branch
 if [ -z "$branch" ]; then
-    read -p "Введите имя ветки для push [по умолчанию: $default_branch]: " branch
-    branch=${branch:-$default_branch}
+    branch="$default_branch"
     echo "Ветка не указана. Используем: $branch"
 else
     echo "Используем ветку: $branch"
