@@ -4,9 +4,12 @@ set -e -o pipefail
 
 flags=()
 detailed=false
+confirm=true
+
 for arg in "$@"; do
     case "$arg" in
         --detailed) detailed=true ;;
+        --yes|--no-confirm) confirm=false ;;
         --*) flags+=("$arg") ;;
     esac
 done
@@ -27,10 +30,19 @@ else
     fi
 
     tmpfile=$(mktemp)
+    trap 'rm -f "$tmpfile"' EXIT
     
     echo "$commit_message" > "$tmpfile"
     echo -e "Коммит:\n----------------------\n$commit_message\n----------------------"
 
-    git commit "${flags[@]}" -F "$tmpfile"
-    rm "$tmpfile"
+    if [[ "$confirm" == "true" ]]; then
+        read -p "Хотите продолжить? (y/n): " answer
+        if [[ "$answer" =~ ^[yY]$ ]]; then
+            git commit "${flags[@]}" -F "$tmpfile"
+        else
+            echo "Отменено."
+        fi 
+    else 
+        git commit "${flags[@]}" -F "$tmpfile"
+    fi
 fi
