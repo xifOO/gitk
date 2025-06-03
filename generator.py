@@ -41,14 +41,14 @@ def create_commit_message_prompt(diff: str, detailed: bool) -> str:
         return f"""Write a git commit message with title and detailed body for this git diff.
 
                 Requirements:
-                - First line: type(scope): brief description (max 50 chars)
+                - First line: type: brief description (max 50 chars)
                 - Second line: empty
                 - Body: detailed explanation of changes (max 72 chars per line)
                 - Types: feat, fix, docs, style, refactor, test, chore
                 - Use present tense and imperative mood
 
                 Format:
-                feat(scope): brief description
+                feat: brief description
 
                 - Detailed point 1
                 - Detailed point 2
@@ -62,16 +62,16 @@ def create_commit_message_prompt(diff: str, detailed: bool) -> str:
         return f"""Write ONLY a single line commit message for this git diff.
 
                 Requirements:
-                - Use format: type(scope): brief description
+                - Use format: type: brief description
                 - Types: feat, fix, docs, style, refactor, test, chore
                 - Maximum 50 characters total
                 - No explanations, no markdown, no extra text
                 - Just the commit message line
 
                 Examples:
-                feat(auth): add login validation
-                fix(api): handle null user data
-                docs(readme): update setup guide
+                feat: add login validation
+                fix: handle null user data
+                docs: update setup guide
 
                 Git diff:
                 {diff}
