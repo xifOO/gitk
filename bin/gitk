@@ -12,12 +12,17 @@ fi
 
 TARGET="$SCRIPT_DIR/gitk-$CMD"
 
-if [ ! -f "$TARGET" ]; then
-    echo "Неизвестная команда: $CMD"
-    echo -n "Доступные команды: "
-    ls "$SCRIPT_DIR"/gitk-* 2>/dev/null | sed 's/.*gitk-//' | tr '\n' ' '
-    echo
-    exit 1
+if [ -f "$TARGET" ]; then
+    exec "$TARGET" "$@"
 fi
 
-exec "$TARGET" "$@"
+if [[ "$CMD" == "--help" || "$CMD" == "-h" ]]; then
+    echo "gitk — оболочка над git с поддержкой кастомных команд"
+    echo "Пример: gitk commit, gitk push"
+    echo "Доступные команды:"
+    ls "$SCRIPT_DIR"/gitk-* 2>/dev/null | sed 's/.*gitk-//' | tr '\n' ' '
+    echo
+    exit 0
+fi
+
+exec git "$CMD" "$@"
