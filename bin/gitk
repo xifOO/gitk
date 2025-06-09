@@ -2,35 +2,100 @@
 
 set -e -o pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")/../scripts" && pwd)"
-LOCALE_DIR="$(cd "$(dirname "$(readlink -f "$0")")/../locale" && pwd)"
+REAL_PATH="$(cd "$(dirname "$(readlink "$0" || echo "$0")")" && pwd)"
+SCRIPT_DIR="$REAL_PATH/../scripts"
+I18N_DIR="$REAL_PATH/../lib"
 CONFIG_FILE="$HOME/.gitk_config.env"
 
-LANGUAGE="en"
+export GITK_LANG="en"
 if [[ -f "$CONFIG_FILE" ]]; then
     source "$CONFIG_FILE"
 fi
 
-HELP_FILE="$LOCALE_DIR/$LANGUAGE/help.txt"
+source "$I18N_DIR/i18n.sh"
+init_i18n
 
 CMD="$1"
 shift
 
 show_help() {
-    if [[ -f "$HELP_FILE" ]]; then
-        cat "$HELP_FILE"
-    else
-        echo "Help file not found: $HELP_FILE"
-    fi
+    tln "Использование:"
+    tln "  gitk <команда> [опции]"
+    tln ""
+    tln "Доступные команды:"
+    tln "  init        Инициализирует новый git-репозиторий"
+    tln "  add         Добавляет указанные файлы в индекс"
+    tln "  commit      Генерирует сообщение коммита с помощью нейросети"
+    tln "  push        Отправляет изменения на удалённый репозиторий"
+    tln "  help        Показывает эту справку"
+    tln ""
+    tln "Поддерживаются также обычные команды git, если нет своей реализации."
+    tln ""
+}
+
+show_section() {
+    local section="$1"
+    case "$section" in
+        init)
+            tln "[init]"
+            tln "Описание:"
+            tln "  Инициализирует новый git-репозиторий в текущей директории."
+            ;;
+        add)
+            tln "[add]"
+            tln "Описание:"
+            tln "  Добавляет указанные файлы в индекс."
+            tln ""
+            tln "Примеры:"
+            tln "  gitk add file1.txt file2.py"
+            tln "  gitk add .         # добавляет всё"
+            tln ""
+            tln "После добавления будет показан список файлов, попавших в индекс."
+            ;;
+        commit)
+            tln "[commit]"
+            tln "Описание:"
+            tln "  Генерирует сообщение коммита на основе изменений в индексе,"
+            tln "  используя нейросетевой генератор."
+            tln ""
+            tln "Опции:"
+            tln "  --detailed           Генерация подробного сообщения коммита"
+            tln "  --yes, --no-confirm  Не спрашивать подтверждение перед коммитом"
+            tln "  --split              Создавать отдельный коммит для каждого файла в индексе"
+            tln "  --author, --amend и другие опции Git также поддерживаются"
+            ;;
+        push)
+            tln "[push]"
+            tln "Описание:"
+            tln "  Отправляет текущую ветку на удалённый репозиторий."
+            tln ""
+            tln "Особенности:"
+            tln "  - Если не указаны remote и ветка, будет предложен выбор"
+            tln "  - Используется remote по умолчанию: origin"
+            tln ""
+            tln "Примеры:"
+            tln "  gitk push"
+            tln "  gitk push origin dev"
+            ;;
+        help)
+            tln "[help]"
+            tln "Описание:"
+            tln "  Показывает эту справку. Можно указать команду:"
+            tln ""
+            tln "Примеры:"
+            tln "  gitk help"
+            tln "  gitk help commit"
+            ;;
+        *)
+            tf "Нет справки по команде: %s\n" "$section"
+            exit 1
+            ;;
+    esac
 }
 
 if [[ "$CMD" == "help" ]]; then
     if [[ $# -gt 0 ]]; then
-        SECTION="$1"
-        awk -v RS= '/^\# \['"$SECTION"'\]/{ print; exit }' "$HELP_FILE" || {
-            echo "Нет справки по команде '$SECTION'"
-            exit 1
-        }
+        show_section "$1"
     else
         show_help
     fi
@@ -38,7 +103,7 @@ if [[ "$CMD" == "help" ]]; then
 fi
 
 if [ -z "$CMD" ]; then
-    echo "Команда не указана. Пример использования: gitk commit"
+    tln "Команда не указана. Пример использования: gitk commit"
     exit 1
 fi
 
@@ -53,4 +118,5 @@ if [[ "$CMD" == "--help" || "$CMD" == "-h" ]]; then
     exit 0
 fi
 
-exec git "$CMD" "$@"
+tf "Неизвестная команда: %s\n" "$CMD"
+exit 1
