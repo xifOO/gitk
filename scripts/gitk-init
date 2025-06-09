@@ -2,59 +2,64 @@
 
 set -e -o pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/i18n.sh"
+
 CONFIG_FILE="$HOME/.gitk_config.env"
 
-echo "Добро пожаловать в GitK 
+init_i18n
 
-Чтобы использовать генерацию сообщений коммитов с помощью ChatGPT,
-необходимо указать ваш OpenAI API ключ.
+echo "$(t "Welcome to GitK")"
 
-Ключ будет сохранён локально в:
-    $CONFIG_FILE
-
-Этот файл:
-  - будет доступен только вам (права доступа 600)
-  - НЕ будет отправлен ни в какие репозитории
-  - может быть удалён или изменён в любой момент
-
-Вы также можете использовать переменную окружения OPENAI_API_KEY вместо этого шага.
-"
+echo ""
+echo "$(t "To use commit message generation via ChatGPT,")"
+echo "$(t "you need to provide your OpenAI API key.")"
+echo ""
+echo "$(t "The key will be saved locally at:")"
+echo "    $CONFIG_FILE"
+echo ""
+echo "$(t "This file:")"
+echo "  - $(t "will be accessible only by you (permissions 600)")"
+echo "  - $(t "WILL NOT be pushed to any repositories")"
+echo "  - $(t "can be deleted or changed at any time")"
+echo ""
+echo "$(t "You can also use the OPENAI_API_KEY environment variable instead of this step.")"
+echo ""
 
 if [ "$1" == "--clear" ]; then
     if [ -f "$CONFIG_FILE" ]; then
-        read -p "Вы точно хотите удалить сохраненный ключ? (y/n): " answer
+        read -p "$(t "Are you sure you want to delete the saved key? (y/n): ")" answer
         if [[ "$answer" =~ ^[yY]$ ]]; then
             rm "$CONFIG_FILE"
-            echo "Ключ удалён."
+            echo "$(t "Key deleted.")"
         else 
-            echo "Ключ не был очищен."
+            echo "$(t "Key was not deleted.")"
         fi
     else
-        echo "У вас нет сохраненного ключа."
+        echo "$(t "You have no saved key.")"
     fi
     exit 0
 fi
 
-
 if [ "$1" != "--force" ]; then
-    read -p "Продолжить и ввести ключ? (y/n): " answer
+    read -p "$(t "Continue and enter the key? (y/n): ")" answer
     if [[ ! "$answer" =~ ^[yY]$ ]]; then
-        echo "Вы можете использовать переменную окружения OPENAI_API_KEY вместо этого шага."
+        echo "$(t "You can use the OPENAI_API_KEY environment variable instead of this step.")"
         exit 0
     fi
 
     if [ -f "$CONFIG_FILE" ]; then
-        echo "Файл конфигурации уже существует."
-        read -p "Хотите перезаписать ключ? (y/n): " overwrite
+        echo "$(t "Configuration file already exists.")"
+        read -p "$(t "Do you want to overwrite the key? (y/n): ")" overwrite
         if [[ ! "$overwrite" =~ ^[yY]$ ]]; then
-            echo "Ключ не будет изменён. Вы можете использовать gitk help для ознакомления с командами."
+            echo "$(t "The key will not be changed. Use gitk help to explore available commands.")"
             exit 0
         fi
     fi
 fi
 
-read -s -p "Введите ваш OpenAI API ключ: " OPENAI_API_KEY
+read -s -p "$(t "Enter your OpenAI API key: ")" OPENAI_API_KEY
 echo
 echo "OPENAI_API_KEY=$OPENAI_API_KEY" > "$CONFIG_FILE"
 chmod 600 "$CONFIG_FILE"
-echo -e "\nКлюч успешно сохранён в $CONFIG_FILE"
+echo -e "\n$(t "Key successfully saved to") $CONFIG_FILE"
