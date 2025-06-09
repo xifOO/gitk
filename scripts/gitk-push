@@ -2,29 +2,34 @@
 
 set -e -o pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/i18n.sh"
+
+init_i18n
+
 remotes=($(git remote))
 remote_count=${#remotes[@]}
 
 if [ "$remote_count" -eq 0 ]; then
-    echo "Нет настроенных удаленных репозиториев (remotes)."
+    echo "$(t "No configured remote repositories.")"
     exit 0
 elif [ "$remote_count" -eq 1 ]; then 
     remote=${remotes[0]}
-    echo "Используется remote: $remote"
+    echo "$(t "Using remote:") $remote"
 else 
-    echo "Найдено несколько remotes:"
+    echo "$(t "Multiple remotes found:")"
     for i in "${!remotes[@]}"; do 
         echo "$((i + 1)) ${remotes[$i]}" 
     done
 
     while true; do
-        read -p "Выберите номер remote для push: " index
+        read -p "$(t "Select remote number for push: ")" index
         if [[ "$index" =~ ^[0-9]+$ ]] && [ "$index" -ge 1 ] && [ "$index" -le "$remote_count" ]; then
             remote=${remotes[$((index - 1))]}
-            echo "Выбран remote: $remote"
+            echo "$(t "Selected remote:") $remote"
             break
         else
-            echo "Неверный ввод"
+            echo "$(t "Invalid input")"
         fi
     done
 fi
@@ -51,16 +56,16 @@ if [ -n "$user_remote" ]; then
 fi
 
 if [ -z "$branch" ]; then
-    read -p "Введите имя ветки для push [по умолчанию: $default_branch]: " input_branch
+    read -p "$(t "Enter branch name for push [default:") $default_branch]: " input_branch
     if [ -z "$input_branch" ]; then
         branch="$default_branch"
-        echo "Ветка не указана. Используем: $branch"
+        echo "$(t "Branch not specified. Using:") $branch"
     else
         branch="$input_branch"
-        echo "Используем ветку: $branch"
+        echo "$(t "Using branch:") $branch"
     fi
 else
-    echo "Используем ветку: $branch"
+    echo "$(t "Using branch:") $branch"
 fi
 
 git push "$remote" "$branch" "${flags[@]}"
