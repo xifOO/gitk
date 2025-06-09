@@ -1,0 +1,349 @@
+# This file was generated on понедельник,  9 июня 2025 г. 19:03:23 (MSK) on darwin24
+# xgettext version: xgettext (GNU gettext-tools) 0.24.1
+
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#: bin/gitk.sh:23 bin/gitk.sh:30 bin/gitk.sh:32 bin/gitk.sh:47 bin/gitk.sh:51
+#: bin/gitk.sh:59 bin/gitk.sh:70 bin/gitk.sh:74 bin/gitk.sh:83
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-09 19:02+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: bin/gitk.sh:21
+msgid "Использование:"
+msgstr ""
+
+#: bin/gitk.sh:22
+msgid "  gitk <команда> [опции]"
+msgstr ""
+
+#: bin/gitk.sh:24
+msgid "Доступные команды:"
+msgstr ""
+
+#: bin/gitk.sh:25
+msgid "  init        Инициализирует новый git-репозиторий"
+msgstr ""
+
+#: bin/gitk.sh:26
+msgid "  add         Добавляет указанные файлы в индекс"
+msgstr ""
+
+#: bin/gitk.sh:27
+msgid "  commit      Генерирует сообщение коммита с помощью нейросети"
+msgstr ""
+
+#: bin/gitk.sh:28
+msgid "  push        Отправляет изменения на удалённый репозиторий"
+msgstr ""
+
+#: bin/gitk.sh:29
+msgid "  help        Показывает эту справку"
+msgstr ""
+
+#: bin/gitk.sh:31
+msgid "Поддерживаются также обычные команды git, если нет своей реализации."
+msgstr ""
+
+#: bin/gitk.sh:39
+msgid "[init]"
+msgstr ""
+
+#: bin/gitk.sh:40 bin/gitk.sh:45 bin/gitk.sh:56 bin/gitk.sh:68 bin/gitk.sh:81
+msgid "Описание:"
+msgstr ""
+
+#: bin/gitk.sh:41
+msgid "  Инициализирует новый git-репозиторий в текущей директории."
+msgstr ""
+
+#: bin/gitk.sh:44
+msgid "[add]"
+msgstr ""
+
+#: bin/gitk.sh:46
+msgid "  Добавляет указанные файлы в индекс."
+msgstr ""
+
+#: bin/gitk.sh:48 bin/gitk.sh:75 bin/gitk.sh:84
+msgid "Примеры:"
+msgstr ""
+
+#: bin/gitk.sh:49
+msgid "  gitk add file1.txt file2.py"
+msgstr ""
+
+#: bin/gitk.sh:50
+msgid "  gitk add .         # добавляет всё"
+msgstr ""
+
+#: bin/gitk.sh:52
+msgid "После добавления будет показан список файлов, попавших в индекс."
+msgstr ""
+
+#: bin/gitk.sh:55
+msgid "[commit]"
+msgstr ""
+
+#: bin/gitk.sh:57
+msgid "  Генерирует сообщение коммита на основе изменений в индексе,"
+msgstr ""
+
+#: bin/gitk.sh:58
+msgid "  используя нейросетевой генератор."
+msgstr ""
+
+#: bin/gitk.sh:60
+msgid "Опции:"
+msgstr ""
+
+#: bin/gitk.sh:61
+msgid "  --detailed           Генерация подробного сообщения коммита"
+msgstr ""
+
+#: bin/gitk.sh:62
+msgid "  --yes, --no-confirm  Не спрашивать подтверждение перед коммитом"
+msgstr ""
+
+#: bin/gitk.sh:63
+msgid ""
+"  --split              Создавать отдельный коммит для каждого файла в индексе"
+msgstr ""
+
+#: bin/gitk.sh:64
+msgid "  --author, --amend и другие опции Git также поддерживаются"
+msgstr ""
+
+#: bin/gitk.sh:67
+msgid "[push]"
+msgstr ""
+
+#: bin/gitk.sh:69
+msgid "  Отправляет текущую ветку на удалённый репозиторий."
+msgstr ""
+
+#: bin/gitk.sh:71
+msgid "Особенности:"
+msgstr ""
+
+#: bin/gitk.sh:72
+msgid "  - Если не указаны remote и ветка, будет предложен выбор"
+msgstr ""
+
+#: bin/gitk.sh:73
+msgid "  - Используется remote по умолчанию: origin"
+msgstr ""
+
+#: bin/gitk.sh:76
+msgid "  gitk push"
+msgstr ""
+
+#: bin/gitk.sh:77
+msgid "  gitk push origin dev"
+msgstr ""
+
+#: bin/gitk.sh:80
+msgid "[help]"
+msgstr ""
+
+#: bin/gitk.sh:82
+msgid "  Показывает эту справку. Можно указать команду:"
+msgstr ""
+
+#: bin/gitk.sh:85
+msgid "  gitk help"
+msgstr ""
+
+#: bin/gitk.sh:86
+msgid "  gitk help commit"
+msgstr ""
+
+#: bin/gitk.sh:89
+msgid "Нет справки по команде: %s\\n"
+msgstr ""
+
+#: bin/gitk.sh:105
+msgid "Команда не указана. Пример использования: gitk commit"
+msgstr ""
+
+#: bin/gitk.sh:120
+msgid "Неизвестная команда: %s\\n"
+msgstr ""
+
+#: scripts/gitk-commit.sh:23
+msgid "Индекс пуст. Нечего коммитить."
+msgstr ""
+
+#: scripts/gitk-commit.sh:31
+msgid "Генерируем коммит для файла:"
+msgstr ""
+
+#: scripts/gitk-commit.sh:46 scripts/gitk-commit.sh:73
+msgid "Коммит:"
+msgstr ""
+
+#: scripts/gitk-commit.sh:47 scripts/gitk-commit.sh:76
+msgid "Хотите продолжить? (y/n): "
+msgstr ""
+
+#: scripts/gitk-commit.sh:49
+msgid "Пропускаем"
+msgstr ""
+
+#: scripts/gitk-commit.sh:54
+msgid "Коммит файла"
+msgstr ""
+
+#: scripts/gitk-commit.sh:80
+msgid "Отменено."
+msgstr ""
+
+#: scripts/gitk-add.sh:9
+msgid "Добавляю указанные файлы: %s"
+msgstr ""
+
+#: scripts/gitk-add.sh:12
+msgid "Добавляю все изменения (git add .)"
+msgstr ""
+
+#: scripts/gitk-add.sh:15
+msgid "Не переданы файлы для добавления в индекс."
+msgstr ""
+
+#: scripts/gitk-add.sh:20
+msgid "Файлы в индексе:"
+msgstr ""
+
+#: scripts/gitk-push.sh:12
+msgid "Нет настроенных удаленных репозиториев (remotes)."
+msgstr ""
+
+#: scripts/gitk-push.sh:16
+msgid "Используется remote:"
+msgstr ""
+
+#: scripts/gitk-push.sh:18
+msgid "Найдено несколько remotes:"
+msgstr ""
+
+#: scripts/gitk-push.sh:24
+msgid "Выберите номер remote для push: "
+msgstr ""
+
+#: scripts/gitk-push.sh:27
+msgid "Выбран remote:"
+msgstr ""
+
+#: scripts/gitk-push.sh:30
+msgid "Неверный ввод"
+msgstr ""
+
+#: scripts/gitk-push.sh:57
+msgid "Введите имя ветки для push [по умолчанию:"
+msgstr ""
+
+#: scripts/gitk-push.sh:60
+msgid "Ветка не указана. Используем:"
+msgstr ""
+
+#: scripts/gitk-push.sh:63 scripts/gitk-push.sh:66
+msgid "Используем ветку:"
+msgstr ""
+
+#: scripts/gitk-init.sh:10
+msgid "Добро пожаловать в GitK"
+msgstr ""
+
+#: scripts/gitk-init.sh:13
+msgid "Чтобы использовать генерацию сообщений коммитов с помощью ChatGPT,"
+msgstr ""
+
+#: scripts/gitk-init.sh:14
+msgid "необходимо указать ваш OpenAI API ключ."
+msgstr ""
+
+#: scripts/gitk-init.sh:16
+msgid "Ключ будет сохранён локально в:"
+msgstr ""
+
+#: scripts/gitk-init.sh:19
+msgid "Этот файл:"
+msgstr ""
+
+#: scripts/gitk-init.sh:20
+msgid "будет доступен только вам (права доступа 600)"
+msgstr ""
+
+#: scripts/gitk-init.sh:21
+msgid "НЕ будет отправлен ни в какие репозитории"
+msgstr ""
+
+#: scripts/gitk-init.sh:22
+msgid "может быть удалён или изменён в любой момент"
+msgstr ""
+
+#: scripts/gitk-init.sh:24
+msgid ""
+"Вы также можете использовать переменную окружения OPENAI_API_KEY вместо "
+"этого шага."
+msgstr ""
+
+#: scripts/gitk-init.sh:29
+msgid "Вы точно хотите удалить сохраненный ключ? (y/n): "
+msgstr ""
+
+#: scripts/gitk-init.sh:32
+msgid "Ключ удалён."
+msgstr ""
+
+#: scripts/gitk-init.sh:34
+msgid "Ключ не был очищен."
+msgstr ""
+
+#: scripts/gitk-init.sh:37
+msgid "У вас нет сохраненного ключа."
+msgstr ""
+
+#: scripts/gitk-init.sh:43
+msgid "Продолжить и ввести ключ? (y/n): "
+msgstr ""
+
+#: scripts/gitk-init.sh:45
+msgid ""
+"Вы можете использовать переменную окружения OPENAI_API_KEY вместо этого шага."
+msgstr ""
+
+#: scripts/gitk-init.sh:50
+msgid "Файл конфигурации уже существует."
+msgstr ""
+
+#: scripts/gitk-init.sh:51
+msgid "Хотите перезаписать ключ? (y/n): "
+msgstr ""
+
+#: scripts/gitk-init.sh:53
+msgid ""
+"Ключ не будет изменён. Вы можете использовать gitk help для ознакомления с "
+"командами."
+msgstr ""
+
+#: scripts/gitk-init.sh:59
+msgid "Введите ваш OpenAI API ключ: "
+msgstr ""
+
+#: scripts/gitk-init.sh:63
+msgid "Ключ успешно сохранён в"
+msgstr ""
