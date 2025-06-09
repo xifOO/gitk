@@ -8,19 +8,20 @@ source "$SCRIPT_DIR/../lib/i18n.sh"
 init_i18n 
 
 
-if [ "$#" -gt 0 ]; then
+if [ "$#" -eq 1 ] && [ "$1" = "." ]; then
+    t "Adding all changes"
+    echo
+    git add .
+elif [ "$#" -gt 0 ]; then
     tf "Adding specified files: %s" "$*"
     echo
     git add "$@"
-elif [ "$#" -eq 1 ] && [ "$1" = "." ]; then
-    tf "Adding specified files: %s" "$*"
-    echo
-    git add .
 else 
     t "No files provided to add to the index."
     echo
     exit 0
 fi
+
 
 echo
 t "Files in index:"
