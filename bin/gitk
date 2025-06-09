@@ -118,5 +118,6 @@ if [[ "$CMD" == "--help" || "$CMD" == "-h" ]]; then
     exit 0
 fi
 
-tf "Неизвестная команда: %s\n" "$CMD"
-exit 1
+
+exec git "$CMD" "$@"
+
