@@ -50,10 +50,15 @@ if [ -n "$user_remote" ]; then
     remote="$user_remote"
 fi
 
-read -p "Введите имя ветки для push [по умолчанию: $default_branch]: " branch
 if [ -z "$branch" ]; then
-    branch="$default_branch"
-    echo "Ветка не указана. Используем: $branch"
+    read -p "Введите имя ветки для push [по умолчанию: $default_branch]: " input_branch
+    if [ -z "$input_branch" ]; then
+        branch="$default_branch"
+        echo "Ветка не указана. Используем: $branch"
+    else
+        branch="$input_branch"
+        echo "Используем ветку: $branch"
+    fi
 else
     echo "Используем ветку: $branch"
 fi
