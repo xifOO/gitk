@@ -2,18 +2,27 @@
 
 set -e -o pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/i18n.sh"
+
+init_i18n 
+
+
 if [ "$#" -gt 0 ]; then
-    echo "Добавляю указанные файлы: $@"
+    tf "Adding specified files: %s" "$*"
+    echo
     git add "$@"
 elif [ "$#" -eq 1 ] && [ "$1" = "." ]; then
-    echo "Добавляю все изменения (git add .)" 
+    tf "Adding specified files: %s" "$*"
+    echo
     git add .
 else 
-    echo "Не переданы файлы для добавления в индекс."
+    t "No files provided to add to the index."
+    echo
     exit 0
 fi
 
-echo -e "\nФайлы в индексе:"
+echo
+t "Files in index:"
+echo
 git --no-pager diff --cached --name-only
-
-
