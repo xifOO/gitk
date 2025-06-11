@@ -3,6 +3,8 @@
 set -e -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$SCRIPT_DIR/.."
+
 source "$SCRIPT_DIR/../lib/i18n.sh"
 
 init_i18n 
@@ -34,9 +36,9 @@ if [[ "$split" == "true" ]]; then
         file_diff=$(git diff --cached -- "$file")
 
         if [[ "$detailed" == "true" ]]; then
-            commit_message=$(echo "$file_diff" | python3 "$SCRIPT_DIR/../generator.py" --detailed)
+            commit_message=$(echo "$file_diff" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py" --detailed)
         else
-            commit_message=$(echo "$file_diff" | python3 "$SCRIPT_DIR/../generator.py")
+            commit_message=$(echo "$file_diff" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py")
         fi
 
         tmpfile=$(mktemp)
@@ -63,9 +65,9 @@ else
     diff=$(git diff --cached)
     
     if [[ "$detailed" == "true" ]]; then
-        commit_message=$(echo "$diff" | python3 "$SCRIPT_DIR/../generator.py" --detailed)
+        commit_message=$(echo "$diff" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py" --detailed)
     else
-        commit_message=$(echo "$diff" | python3 "$SCRIPT_DIR/../generator.py")
+        commit_message=$(echo "$diff" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py")
     fi
     
     tmpfile=$(mktemp)
