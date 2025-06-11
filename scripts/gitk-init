@@ -1,65 +1,13 @@
 #!/bin/bash
-
 set -e -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$SCRIPT_DIR/.."
+
 source "$SCRIPT_DIR/../lib/i18n.sh"
-
-CONFIG_FILE="$HOME/.gitk_config.env"
-
 init_i18n
 
 echo "$(t "Welcome to GitK")"
-
-echo ""
-echo "$(t "To use commit message generation via ChatGPT,")"
-echo "$(t "you need to provide your OpenAI API key.")"
-echo ""
-echo "$(t "The key will be saved locally at:")"
-echo "    $CONFIG_FILE"
-echo ""
-echo "$(t "This file:")"
-echo "  - $(t "will be accessible only by you (permissions 600)")"
-echo "  - $(t "WILL NOT be pushed to any repositories")"
-echo "  - $(t "can be deleted or changed at any time")"
-echo ""
-echo "$(t "You can also use the OPENAI_API_KEY environment variable instead of this step.")"
 echo ""
 
-if [ "$1" == "--clear" ]; then
-    if [ -f "$CONFIG_FILE" ]; then
-        read -p "$(t "Are you sure you want to delete the saved key? (y/n): ")" answer
-        if [[ "$answer" =~ ^[yY]$ ]]; then
-            rm "$CONFIG_FILE"
-            echo "$(t "Key deleted.")"
-        else 
-            echo "$(t "Key was not deleted.")"
-        fi
-    else
-        echo "$(t "You have no saved key.")"
-    fi
-    exit 0
-fi
-
-if [ "$1" != "--force" ]; then
-    read -p "$(t "Continue and enter the key? (y/n): ")" answer
-    if [[ ! "$answer" =~ ^[yY]$ ]]; then
-        echo "$(t "You can use the OPENAI_API_KEY environment variable instead of this step.")"
-        exit 0
-    fi
-
-    if [ -f "$CONFIG_FILE" ]; then
-        echo "$(t "Configuration file already exists.")"
-        read -p "$(t "Do you want to overwrite the key? (y/n): ")" overwrite
-        if [[ ! "$overwrite" =~ ^[yY]$ ]]; then
-            echo "$(t "The key will not be changed. Use gitk help to explore available commands.")"
-            exit 0
-        fi
-    fi
-fi
-
-read -s -p "$(t "Enter your OpenAI API key: ")" OPENAI_API_KEY
-echo
-echo "OPENAI_API_KEY=$OPENAI_API_KEY" > "$CONFIG_FILE"
-chmod 600 "$CONFIG_FILE"
-echo -e "\n$(t "Key successfully saved to") $CONFIG_FILE"
+PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/init_config.py"
