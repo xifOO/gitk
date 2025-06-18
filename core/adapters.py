@@ -31,6 +31,7 @@ class ModelAdapter(ABC):
                 - Body: detailed explanation of changes (max 72 chars per line)
                 - Types: feat, fix, docs, style, refactor, test, chore
                 - Use present tense and imperative mood
+                - Commit message must start with lowercase letter
 
                 Format:
                 feat: brief description
@@ -52,6 +53,7 @@ class ModelAdapter(ABC):
                     - Maximum 50 characters total
                     - No explanations, no markdown, no extra text
                     - Just the commit message line
+                    - Commit message must start with lowercase letter
 
                     Examples:
                     feat: add login validation
