@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import questionary
 from pathlib import Path
 
@@ -41,7 +42,7 @@ class GitkConfig:
             self._save_api_key(selected_model.value.provider, api_key)
         
         print(f"GITK настроен с моделью: {selected_model.value.name}")
-        print(f"Файлы конфига: {self.CONFIG_FILE}")
+        print(f"Файлы конфига: {self.CONFIG_FILE} {self.ENV_FILE}")
 
     def _select_model(self) -> SupportedModel:
         print("\n Выберите модель для генерации коммитов:")
@@ -71,7 +72,22 @@ class GitkConfig:
         ).ask()
 
         return selected
-
+    
+    def _env_key_exists(self, env_var: str) -> bool:
+        if not self.ENV_FILE.exists():
+            return False
+        with open(self.ENV_FILE, 'r') as f:
+            for line in f:
+                if line.strip().startswith(f"{env_var}="):
+                    return True
+        return False
+    
+    def _read_key_from_env_file(self, env_var: str) -> str:
+        with open(self.ENV_FILE, 'r') as f:
+            for line in f:
+                if line.strip().startswith(f"{env_var}="):
+                    return line.strip().split('=', 1)[1]
+        return ""
     
     def _setup_api_key(self, model: SupportedModel) -> str:
         provider = model.value.provider
@@ -85,7 +101,19 @@ class GitkConfig:
         if provider in instructions:
             print(f"\n{model.value.name}: {instructions[provider]}\n")
 
+        env_var = f"GITK_{provider.upper()}_API_KEY"
         
+        existing_key = self._env_key_exists(env_var)
+
+        if existing_key:
+            change = questionary.confirm(
+                f"API ключ для {provider} уже найден. Хотите заменить его?",
+                default=False
+            ).ask()
+
+            if not change:
+                return self._read_key_from_env_file(env_var)
+
         api_key = questionary.text(
             f"Введите API ключ для {provider}",
             validate=lambda x: len(x.strip()) > 0 or "API ключ не может быть пустым"
