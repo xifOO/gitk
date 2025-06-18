@@ -21,10 +21,15 @@ def main():
         config_data = config_loader.load_config()
 
         model_json = config_data.get("model_config", {})
+
+        provider = config_data.get("provider")
+        
+        if provider is None:
+            raise ValueError("Провайдер отсутствует")
         
         model_config = ModelConfig(
             name=model_json.get("name"),
-            provider=config_data.get("provider"),
+            provider=provider,
             api_base=model_json.get("api_base"),
             model_id=model_json.get("model_id"),
             is_free=model_json.get("is_free"),
@@ -32,6 +37,7 @@ def main():
             temperature=model_json.get("temperature", 0.4),
             description=""
         )
+        
         adapter = ModelFactory.create_adapter(model_config)
         commit_message = adapter.generate_commit_message(cleaned_diff, detailed=detailed)
 

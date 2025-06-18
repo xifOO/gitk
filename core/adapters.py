@@ -13,7 +13,7 @@ class ModelAdapter(ABC):
         self.api_key = self._get_api_key()
     
     @abstractmethod
-    def generate_commit_message(self, diff: str) -> str: ...
+    def generate_commit_message(self, diff: str, detailed: bool) -> str: ...
 
     def _get_api_key(self) -> Optional[str]:
         env_var = f"GITK_{self.config.provider.upper()}_API_KEY"
