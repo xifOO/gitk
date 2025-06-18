@@ -18,38 +18,20 @@ class SupportedModel(Enum):
     
     QWEN_MODEL = ModelConfig(
         name="Qwen 2.5",
-        provider="qwen",
+        provider="openrouter",
         api_base="https://openrouter.ai/api/v1",  
         model_id="qwen/qwen-2.5-72b-instruct:free", 
         is_free=True,
         description="Бесплатная модель от Qwen с лимитами."
     )
 
-    OPENAI_GPT4 = ModelConfig(
-        name="GPT-4 Turbo",
-        provider="openai",
-        api_base="https://api.openai.com/v1",
-        model_id="gpt-4-turbo-preview", 
-        is_free=False,
-        description="Лучшее качество генерации коммитов."
-    )
-
-    CLAUDE_SONNET = ModelConfig(
-        name="Claude 3.5 Sonnet",
-        provider="anthropic",
-        api_base="https://api.anthropic.com",
-        model_id="claude-3-5-sonnet-20241022",
-        is_free=False,
-        description="Отличное понимание кода и контекста."
-    )
-
-    GEMINI_PRO = ModelConfig(
-        name="Gemini Pro",
-        provider="google",
-        api_base="https://generativelanguage.googleapis.com/v1beta",
-        model_id="gemini-pro",
-        is_free=False,
-        description="Хорошее соотношение цена/качество."
+    MISTRALAI_MODEL = ModelConfig(
+        name="Google Gemma",
+        provider="openrouter",
+        api_base="https://openrouter.ai/api/v1",
+        model_id="google/gemma-3n-e4b-it:free",
+        is_free=True,
+        description="Поддерживает мультимодальные входные данные, что позволяет выполнять различные задачи, такие как генерация текста."
     )
 
     @classmethod

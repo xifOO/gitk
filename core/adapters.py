@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 import os
+import sys
 from typing import Optional
 
 import requests
+
 from core.models import ModelConfig
 
 
@@ -62,7 +64,7 @@ class ModelAdapter(ABC):
                     Commit message:"""
         
 
-class QwenAdapter(ModelAdapter):   
+class OpenRouterAdapter(ModelAdapter):   
     def generate_commit_message(self, diff: str, detailed: bool = False) -> str:
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -85,36 +87,7 @@ class QwenAdapter(ModelAdapter):
         )
         
         if response.status_code != 200:
-            raise Exception(f"Qwen API error: {response.text}")
-        
-        result = response.json()
-        return result["choices"][0]["message"]["content"].strip()
-
-
-class OpenAIAdapter(ModelAdapter):
-    def generate_commit_message(self, diff: str, detailed: bool = False) -> str:
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        data = {
-            "model": self.config.model_id,
-            "messages": [
-                {"role": "user", "content": self._build_prompt(diff, detailed)}
-            ],
-            "max_tokens": self.config.max_tokens,
-            "temperature": self.config.temperature
-        }
-        
-        response = requests.post(
-            f"{self.config.api_base}/chat/completions",
-            headers=headers,
-            json=data
-        )
-        
-        if response.status_code != 200:
-            raise Exception(f"OpenAI API error: {response.text}")
+            raise Exception(f"{self.config.provider} API error: {response.text}")
         
         result = response.json()
         return result["choices"][0]["message"]["content"].strip()
@@ -122,8 +95,7 @@ class OpenAIAdapter(ModelAdapter):
 
 class ModelFactory:    
     ADAPTERS = {
-        "qwen": QwenAdapter,
-        "openai": OpenAIAdapter
+        "openrouter": OpenRouterAdapter
     }
     
     @classmethod
