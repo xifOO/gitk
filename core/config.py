@@ -93,9 +93,7 @@ class GitkConfig:
         provider = model.value.provider
 
         instructions = {
-            "openai": "GPT-4 Turbo → Получите ключ на: https://platform.openai.com/api-keys",
-            "anthropic": "Claude 3.5 Sonnet → Получите ключ на: https://console.anthropic.com/",
-            "google": "Gemini Pro → Получите ключ на: https://aistudio.google.com/app/apikey",
+            "openrouter": "OpenRouter → Получите ключ на: https://openrouter.ai",
         }
 
         if provider in instructions:

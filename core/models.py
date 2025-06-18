@@ -25,7 +25,7 @@ class SupportedModel(Enum):
         description="Бесплатная модель от Qwen с лимитами."
     )
 
-    MISTRALAI_MODEL = ModelConfig(
+    GEMMA_MODEL = ModelConfig(
         name="Google Gemma",
         provider="openrouter",
         api_base="https://openrouter.ai/api/v1",
