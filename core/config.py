@@ -1,10 +1,13 @@
+from calendar import c
 import json
 import os
-import sys
+from typing import Optional
 import questionary
 from pathlib import Path
 
-from .models import SupportedModel
+from core.models import SupportedModel
+
+from core.constants import _DEFAULT_COMMIT_TEPLATE
 
 
 MAX_DIFF_LENGTH = 3000
@@ -15,6 +18,7 @@ class GitkConfig:
     CONFIG_DIR = Path.home() / ".gitk_config"
     CONFIG_FILE = CONFIG_DIR / "config.json"
     ENV_FILE = CONFIG_DIR / ".env"
+    TEMPLATES_DIR = CONFIG_DIR / "templates"
 
     def init_config(self):
 
@@ -23,6 +27,7 @@ class GitkConfig:
         selected_model = self._select_model()
 
         api_key = self._setup_api_key(selected_model)
+        commit_template = self._setup_commit_template()
         
         config = {
             "model": selected_model.name,
@@ -34,7 +39,8 @@ class GitkConfig:
                 "is_free": selected_model.value.is_free,
                 "max_tokens": selected_model.value.max_tokens,
                 "temperature": selected_model.value.temperature
-            }
+            },
+            "commit_template": commit_template
         }
 
         self._save_config(config)
@@ -73,6 +79,72 @@ class GitkConfig:
 
         return selected
     
+
+    def _setup_commit_template(self) -> Optional[str]:
+        print("\n=== Настройка шаблона коммитов ===")
+
+        choices = [
+            questionary.Choice("Использовать стандартный шаблон", value="default"),
+            questionary.Choice("Создать собственный шаблон", value="custom"),
+            questionary.Choice("Загрузить шаблон с файла", value="file")
+        ]
+
+        choice = questionary.select(
+            "Выберите опцию для шаблона коммитов:",
+            choices=choices
+        ).ask()
+
+        match choice:
+            case "default":
+                return _DEFAULT_COMMIT_TEPLATE
+            case "custom":
+                return self._create_custom_template()
+            case "file":
+                return self._load_template_from_file()
+
+    def _create_custom_template(self) -> str:
+        lines = []
+
+        while True:
+            line = input()
+
+            if line == "":
+                break
+
+            lines.append(line)
+        
+        template = "\n".join(lines)
+
+        template_name = questionary.text(
+            "Введите имя файла для сохранения шаблона (без расширения):",
+            default="custom_template"
+        ).ask()
+
+        self.TEMPLATES_DIR.mkdir(exist_ok=True)
+
+        template_path = self.TEMPLATES_DIR / f"{template_name}.txt"
+
+        try:
+            with open(template_path, 'w', encoding='utf-8') as f:
+                f.write(template)
+            print(f"Шаблон сохранен в: {template_path}")
+        except Exception as e:
+            print(f"Ошибка сохранения шаблона: {e}")
+            print("Шаблон будет использован без сохранения в файл")
+        
+        return template
+
+    def _load_template_from_file(self) -> Optional[str]:
+        file_path = questionary.path(
+            "Укажите путь к файлу шаблона:",
+            validate=lambda x: Path(x).exists() or "Файл не найден"
+        ).ask()
+        
+        try:
+            return self.load_template_from_file(file_path)
+        except Exception as e:
+            print(f"Ошибка загрузки шаблона: {e}")
+
     def _env_key_exists(self, env_var: str) -> bool:
         if not self.ENV_FILE.exists():
             return False
@@ -140,7 +212,30 @@ class GitkConfig:
             f.write("# GitK API KEYS\n")
             for key, value in existing_vars.items():
                 f.write(f"{key}={value}\n")
-        
+
+    def list_templates(self):
+        if not self.TEMPLATES_DIR.exists():
+            print("Папка с шаблонами не найдена")
+            return
+
+        template_files = list(self.TEMPLATES_DIR.glob("*.txt"))
+
+        if not template_files:
+            print("Шаблоны не найдены")
+            return
+
+        print("Доступные шаблоны: ")
+        for template_file in template_files:
+            print(f" - {template_file.name}")
+
+    def load_template_from_file(self, file_path: str) -> str:
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Template file not found: {file_path}")
+        except Exception as e:
+            raise Exception(f"Error reading template file {file_path}: {e}")
     
     def load_config(self) -> dict:
         if not self.CONFIG_FILE.exists():
