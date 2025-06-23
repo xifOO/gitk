@@ -5,7 +5,7 @@ set -e -o pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$SCRIPT_DIR/.."
 
-source "$SCRIPT_DIR/../lib/i18n.sh"
+source "$PROJECT_ROOT/lib/i18n.sh"
 
 init_i18n 
 
@@ -23,10 +23,21 @@ for arg in "$@"; do
     esac
 done
 
+cd "$PROJECT_ROOT"
+
 if git diff --cached --quiet; then
     t "Index is empty. Nothing to commit."
     exit 0
 fi
+
+generate_commit_message() {
+    local diff_input="$1"
+    if [[ "$detailed" == "true" ]]; then
+        echo "$diff_input" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py" --detailed
+    else
+        echo "$diff_input" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py"
+    fi
+}
 
 if [[ "$split" == "true" ]]; then
     staged_files=$(git diff --cached --name-only)
@@ -35,15 +46,15 @@ if [[ "$split" == "true" ]]; then
         echo "$(t "Generating commit for file:") $file"
         file_diff=$(git diff --cached -- "$file")
 
-        if [[ "$detailed" == "true" ]]; then
-            commit_message=$(echo "$file_diff" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py" --detailed)
-        else
-            commit_message=$(echo "$file_diff" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py")
+        if [[ -z "$file_diff" ]]; then
+            echo "$(t "Error: Diff is empty for file:") $file"
+            continue
         fi
 
+        commit_message=$(generate_commit_message "$file_diff")
         tmpfile=$(mktemp)
         trap 'rm -f "$tmpfile"' EXIT
-        
+
         echo "$commit_message" > "$tmpfile"
 
         if [[ "$confirm" == "true" ]]; then
@@ -62,20 +73,20 @@ if [[ "$split" == "true" ]]; then
         rm -f "$tmpfile"
     done
 else 
-    diff=$(git diff --cached)
+    full_diff=$(git diff --cached)
     
-    if [[ "$detailed" == "true" ]]; then
-        commit_message=$(echo "$diff" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py" --detailed)
-    else
-        commit_message=$(echo "$diff" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py")
+    if [[ -z "$full_diff" ]]; then
+        echo "$(t "Error: Full diff is empty. Nothing to commit.")"
+        exit 1
     fi
-    
+
+    commit_message=$(generate_commit_message "$full_diff")
     tmpfile=$(mktemp)
     trap 'rm -f "$tmpfile"' EXIT
     echo "$commit_message" > "$tmpfile"
-    
+
     echo -e "$(t "Commit:")\n----------------------\n$commit_message\n----------------------"
-    
+
     if [[ "$confirm" == "true" ]]; then
         read -p "$(t "Do you want to continue? (y/n): ")" answer
         if [[ "$answer" =~ ^[yY]$ ]]; then

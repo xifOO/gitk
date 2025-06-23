@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import os
 import sys
 from typing import Optional
+from prompt import get_commit_instruction
 
 import requests
 
@@ -15,59 +16,42 @@ class ModelAdapter(ABC):
         self.api_key = self._get_api_key()
     
     @abstractmethod
-    def generate_commit_message(self, diff: str, detailed: bool) -> str: ...
+    def generate_commit_message(
+        self, 
+        diff: str, 
+        detailed: bool,
+        commit_template: Optional[str],
+        instruction: Optional[str]
+    ) -> str: ...
 
     def _get_api_key(self) -> Optional[str]:
         env_var = f"GITK_{self.config.provider.upper()}_API_KEY"
         return os.getenv(env_var)
 
-    def _build_prompt(self, diff: str, detailed: bool) -> str:
-        if detailed:
-            return f"""Write a git commit message with title and detailed body for this git diff.
-
-                Requirements:
-                - First line: type: brief description (max 50 chars)
-                - Second line: empty
-                - Body: detailed explanation of changes (max 72 chars per line)
-                - Types: feat, fix, docs, style, refactor, test, chore
-                - Use present tense and imperative mood
-                - Commit message must start with lowercase letter
-
-                Format:
-                feat: brief description
-
-                - Detailed point 1
-                - Detailed point 2
-                - What was changed and why
-
-                Git diff:
-                {diff}
-
-                Commit message:"""
-        else:
-            return f"""Write ONLY a single line commit message for this git diff.
-
-                    Requirements:
-                    - Use format: type: brief description
-                    - Types: feat, fix, docs, style, refactor, test, chore
-                    - Maximum 50 characters total
-                    - No explanations, no markdown, no extra text
-                    - Just the commit message line
-                    - Commit message must start with lowercase letter
-
-                    Examples:
-                    feat: add login validation
-                    fix: handle null user data
-                    docs: update setup guide
-
-                    Git diff:
-                    {diff}
-
-                    Commit message:"""
-        
+    def _build_prompt(
+        self, 
+        diff: str, 
+        detailed: bool = False,
+        commit_template: Optional[str] = None,
+        instruction: Optional[str] = None
+    ) -> str:
+        prompt = get_commit_instruction(
+            diff=diff,
+            detailed=detailed,
+            commit_template=commit_template,
+            instruction=instruction
+        )
+        return prompt
+    
 
 class OpenRouterAdapter(ModelAdapter):   
-    def generate_commit_message(self, diff: str, detailed: bool = False) -> str:
+    def generate_commit_message(
+        self, 
+        diff: str, 
+        detailed: bool = False,
+        commit_template: Optional[str] = None,
+        instruction: Optional[str] = None
+    ) -> str:
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -76,7 +60,7 @@ class OpenRouterAdapter(ModelAdapter):
         data = {
             "model": self.config.model_id,
             "messages": [
-                {"role": "user", "content": self._build_prompt(diff, detailed)}
+                {"role": "user", "content": self._build_prompt(diff, detailed, commit_template, instruction)}
             ],
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature
