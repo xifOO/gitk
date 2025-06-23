@@ -1,9 +1,62 @@
+import argparse
 import sys
 import re
+from typing import Optional
 from core.config import GitkConfig
 from core.models import ModelConfig
 from core.adapters import ModelFactory
 from core.utils import clean_diff
+
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="Generate git commit messages from diff",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+         epilog="""
+                Examples:
+                git diff | python generator.py
+                git diff | python generator.py --detailed
+                git diff | python generator.py --instruction "use conventional commits"
+                git diff | python generator.py --template-file custom_template.txt
+            """
+    )
+
+    parser.add_argument(
+        "--detailed",
+        action="store_true",
+        help="Generate detailed commit message with body"
+    )
+    
+    parser.add_argument(
+        "--instruction",
+        type=str,
+        help="Additional instruction for commit message generation"
+    )
+
+    parser.add_argument(
+        "--template-file",
+        type=str,
+        help="Path to custom commit template file (overrides config template)"
+    )
+
+    parser.add_argument(
+        "--template",
+        type=str,
+        help="Inline custom commit template (overrides config template)"
+    )
+
+    return parser.parse_args()
+
+
+def get_commit_template(args, config_data: dict, config_loader: GitkConfig) -> Optional[str]:
+    if args.template:
+        return args.template
+    
+    if args.template_file:
+        return config_loader.load_template_from_file(args.template_file)
+
+    return config_data.get("commit_template")
 
 
 def main():
@@ -11,9 +64,10 @@ def main():
         if sys.stdin.isatty():
             print("Использование: git diff | python generator.py [--detailed]", file=sys.stderr)
             sys.exit(1)
+        
+        args = parse_arguments()
 
         diff = sys.stdin.read()
-        detailed = "--detailed" in sys.argv
 
         cleaned_diff = clean_diff(diff)
 
@@ -38,10 +92,17 @@ def main():
             description=""
         )
         
+        commit_template = get_commit_template(args, config_data, config_loader)
+        
         adapter = ModelFactory.create_adapter(model_config)
-        commit_message = adapter.generate_commit_message(cleaned_diff, detailed=detailed)
+        commit_message = adapter.generate_commit_message(
+            diff=cleaned_diff,
+            detailed=args.detailed,
+            commit_template=commit_template,
+            instruction=args.instruction
+        )
 
-        commit_message = re.sub(r'^```.*?\n', '', commit_message)
+        commit_message = re.sub(r'^```.*?\n', '', commit_message, flags=re.MULTILINE)
         commit_message = re.sub(r'\n```$', '', commit_message)
         commit_message = commit_message.strip()
 
