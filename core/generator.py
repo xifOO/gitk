@@ -55,8 +55,12 @@ def get_commit_template(args, config_data: dict, config_loader: GitkConfig) -> O
     
     if args.template_file:
         return config_loader.load_template_from_file(args.template_file)
-
-    return config_data.get("commit_template_path")
+    
+    template_path = config_data.get("commit_template_path")
+    if template_path:
+        return config_loader.load_template_from_file(template_path)
+    
+    return 
 
 
 def main():
@@ -93,7 +97,6 @@ def main():
         )
         
         commit_template = get_commit_template(args, config_data, config_loader)
-        print(commit_template)
         
         adapter = ModelFactory.create_adapter(model_config)
         commit_message = adapter.generate_commit_message(
