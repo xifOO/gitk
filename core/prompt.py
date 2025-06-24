@@ -1,6 +1,6 @@
 from typing import Optional
 
-from core.constants import _DEFAULT_COMMIT_TEPLATE
+from core.constants import _DEFAULT_COMMIT_TEMPLATE
 
 
 def get_commit_instruction(
@@ -12,7 +12,7 @@ def get_commit_instruction(
     if not diff.strip():
         raise ValueError("Diff пустой. Убедитесь что есть изменения для commit.")
     
-    _commit_template: str = commit_template or _DEFAULT_COMMIT_TEPLATE
+    _commit_template: str = commit_template or _DEFAULT_COMMIT_TEMPLATE
 
     if detailed:
         result = "Write a git commit message with title and detailed body for this git diff.\n" + _commit_template + diff
