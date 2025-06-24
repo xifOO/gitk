@@ -6,7 +6,7 @@ Requirements:
     - Maximum 50 characters total
     - No explanations, no markdown, no extra text
     - Just the commit message line
-    - Commit message must start with lowercase letter
+    - Commit message must start with lowercase letter!
 
     Examples:
     feat: add login validation

@@ -233,9 +233,9 @@ class GitkConfig:
             with open(file_path, 'r', encoding='utf-8') as f:
                 return f.read()
         except FileNotFoundError:
-            raise FileNotFoundError(f"Template file not found: {file_path}")
+            raise FileNotFoundError(f"Файл шаблона не найден: {file_path}")
         except Exception as e:
-            raise Exception(f"Error reading template file {file_path}: {e}")
+            raise Exception(f"Ошибка чтения файла {file_path}: {e}")
     
     def load_config(self) -> dict:
         if not self.CONFIG_FILE.exists():
