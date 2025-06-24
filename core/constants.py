@@ -1,4 +1,4 @@
-_DEFAULT_COMMIT_TEPLATE: str = """
+_DEFAULT_COMMIT_TEMPLATE: str = """
 
 Requirements:
     - Use format: type: brief description
