@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 import os
-import sys
 from typing import Optional
 from prompt import get_commit_instruction
 
