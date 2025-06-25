@@ -14,14 +14,36 @@ detailed=false
 confirm=true
 split=false
 
-for arg in "$@"; do
-    case "$arg" in
-        --detailed) detailed=true ;;
-        --yes|--no-confirm) confirm=false ;;
-        --split) split=true ;;
-        --*) flags+=("$arg") ;;
+
+while (( "$#" )); do
+    case "$1" in
+        --detailed)
+            detailed=true
+            flags+=("$1")   
+            shift
+            ;;
+        --yes|--no-confirm)
+            confirm=false
+            shift
+            ;;
+        --split)
+            split=true
+            shift
+            ;;
+        --template-file|--instruction|--template)
+            flags+=("$1" "$2")
+            shift 2
+            ;;
+        --*)
+            flags+=("$1")
+            shift
+            ;;
+        *)
+            shift
+            ;;
     esac
 done
+
 
 cd "$PROJECT_ROOT"
 
@@ -33,9 +55,9 @@ fi
 generate_commit_message() {
     local diff_input="$1"
     if [[ "$detailed" == "true" ]]; then
-        echo "$diff_input" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py" --detailed
+        echo "$diff_input" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py" --detailed "${flags[@]}"
     else
-        echo "$diff_input" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py"
+        echo "$diff_input" | PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py" "${flags[@]}"
     fi
 }
 
