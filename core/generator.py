@@ -1,5 +1,4 @@
 import sys
-import re
 from typing import Optional
 from core.config import GitkConfig
 from core.models import ModelConfig
@@ -86,7 +85,6 @@ class CommitGenerator:
     
     @staticmethod
     def _read_diff_from_stdin() -> str:
-        """Читает и валидирует diff из stdin"""
         if sys.stdin.isatty():
             raise ValueError("Данные должны поступать через pipe. Использование: git diff | python generator.py")
         
