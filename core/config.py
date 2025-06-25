@@ -1,6 +1,7 @@
+import re
 import yaml
 import os
-from typing import Dict
+from typing import Dict, Optional, Self
 import questionary
 from pathlib import Path
 
@@ -156,26 +157,74 @@ class ApiKeyManager:
         ).ask()
 
 
-class TemplateManager:
-    
-    def __init__(self, templates_dir: Path):
+class Template:
+
+    def __init__(self, templates_dir: Path, template_name: Optional[str] = None, content: Optional[str] = None) -> None:
         self.templates_dir = templates_dir
-    
-    def setup_template(self) -> Path:
+        self.template_name = template_name
+        self._content = content
+
+    @property
+    def path(self) -> Path:
+        if not self.template_name:
+            raise ValueError("Имя шаблона не задано")
+        return self.templates_dir / f"{self.template_name}.txt"
+
+    @property
+    def content(self) -> str:
+        if self._content is None:
+            self._content = self.load_content()
+        return self._content
+
+    @property
+    def name(self) -> Optional[str]:
+        return self.template_name
+
+    def load_content(self) -> str:
+        try:
+            return self.path.read_text(encoding='utf-8')
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Файл шаблона не найден: {self.path}")
+        except Exception as e:
+            raise Exception(f"Ошибка чтения файла {self.path}: {e}")
+
+    def save(self, content: Optional[str] = None) -> None:
+        content_to_save = content or self._content
+        if content_to_save is None:
+            raise ValueError("Нет содержимого для сохранения")
+
+        try:
+            self.templates_dir.mkdir(parents=True, exist_ok=True)
+            self.path.write_text(content_to_save, encoding='utf-8')
+            self._content = content_to_save
+            print(f"Шаблон сохранен в: {self.path}")
+        except Exception as e:
+            print(f"Ошибка сохранения шаблона: {e}")
+            raise
+
+    def exists(self) -> bool:
+        return self.path.exists()
+
+    def load_template_from_file(self, file_path: str | Path) -> str:
+        path = Path(file_path)
+        template = Template(path.parent, path.stem)
+        return template.content
+
+    def setup_interactive(self) -> Self:
         print("\n=== Настройка шаблона коммитов ===")
 
         template_handlers = {
             "default": self._use_default_template,
-            "list": self._list_templates,
+            "list": self._select_from_existing,
             "custom": self._create_custom_template,
-            "file": self._load_template_from_file
+            "file": self._load_from_external_file
         }
 
         choices = [
             questionary.Choice("Использовать стандартный шаблон", value="default"),
             questionary.Choice("Выбрать из созданных шаблонов", value="list"),
             questionary.Choice("Создать собственный шаблон", value="custom"),
-            questionary.Choice("Загрузить шаблон с файла", value="file")
+            questionary.Choice("Загрузить шаблон из файла", value="file")
         ]
 
         choice = questionary.select(
@@ -184,89 +233,75 @@ class TemplateManager:
         ).ask()
 
         return template_handlers[choice]()
-    
-    def load_from_file(self, file_path: str | Path) -> str:
-        try:
-            return Path(file_path).read_text(encoding='utf-8')
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Файл шаблона не найден: {file_path}")
-        except Exception as e:
-            raise Exception(f"Ошибка чтения файла {file_path}: {e}")
-    
-    def _use_default_template(self) -> Path:
+
+    def _use_default_template(self) -> "Template":
         default_path = self.templates_dir / "default_template.txt"
         if not default_path.exists():
-            raise FileNotFoundError(f"Шаблон default_template.txt не найден в пути {default_path}.")
-        return default_path
-    
-    def _create_custom_template(self) -> Path:
-        template_content = self._get_template_content_from_input()
-        template_name = self._get_template_name()
-        
-        return self._save_template(template_name, template_content)
-    
-    def _get_template_content_from_input(self) -> str:
-        print("Введите строки шаблона (пустая строка — завершить):")
-        lines = []
+            raise FileNotFoundError(f"Стандартный шаблон не найден: {default_path}")
+        return Template(self.templates_dir, default_path.stem)
 
-        while True:
-            line = input()
-            if line == "":
-                break
-            lines.append(line)
-        
-        return "\n".join(lines)
-    
-    def _get_template_name(self) -> str:
-        return questionary.text(
-            "Введите имя файла для сохранения шаблона (без расширения):",
-            default="custom_template"
-        ).ask()
-    
-    def _save_template(self, template_name: str, content: str) -> Path:
-        template_path = self.templates_dir / f"{template_name}.txt"
-        
-        try:
-            template_path.write_text(content, encoding='utf-8')
-            print(f"Шаблон сохранен в: {template_path}")
-            return template_path
-        except Exception as e:
-            print(f"Ошибка сохранения шаблона: {e}")
-            raise
-    
-    def _load_template_from_file(self) -> Path:
+    def _create_custom_template(self) -> "Template":
+        content = self._get_content_from_input()
+        name = self._get_name_from_input()
+
+        template = Template(self.templates_dir, name, content)
+        template.save()
+        return template
+
+    def _load_from_external_file(self) -> "Template":
         file_path = questionary.path(
             "Укажите путь к файлу шаблона:",
             validate=lambda x: Path(x).exists() or "Файл не найден"
         ).ask()
-        
-        return Path(file_path)
-    
-    def _list_templates(self) -> Path:
-        template_files = self._get_available_templates()
-        
-        print("\n=== Настройка шаблона коммитов ===")
 
-        choices = [questionary.Choice(title=tpl.name, value=tpl) for tpl in template_files]
+        path = Path(file_path)
+        return Template(path.parent, path.stem)
+
+    def _select_from_existing(self) -> Self:
+        templates = self._list_all()
+        choices = [
+            questionary.Choice(title=template.name, value=template)
+            for template in templates
+        ]
 
         selected = questionary.select(
             "Выберите шаблон из списка:",
             choices=choices
         ).ask()
 
-        return Path(selected)
-    
-    def _get_available_templates(self) -> list[Path]:
+        return selected
+
+    def _list_all(self) -> list["Template"]:
         if not self.templates_dir.exists():
             raise FileNotFoundError("Папка шаблонов не найдена.")
 
         template_files = list(self.templates_dir.glob("*.txt"))
-
         if not template_files:
             raise FileNotFoundError("Шаблоны не найдены")
 
-        return template_files
+        return [Template(self.templates_dir, path.stem) for path in template_files]
 
+    @staticmethod
+    def _get_content_from_input() -> str:
+        print("Введите строки шаблона (пустая строка — завершить):")
+        lines = []
+        while True:
+            line = input()
+            if line == "":
+                break
+            lines.append(line)
+        return "\n".join(lines)
+
+    @staticmethod
+    def _get_name_from_input() -> str:
+        name = questionary.text(
+            "Введите имя файла для сохранения шаблона (без расширения):",
+            default="custom_template"
+        ).ask()
+        if not re.match(r"^[\w\-\.]+$", name):
+            raise ValueError("Недопустимое имя файла")
+        return name
+    
 
 class ConfigBuilder:
     
@@ -294,16 +329,17 @@ class GitkConfig:
         self.env_manager = EnvManager(self.paths.env_file)
         self.model_selector = ModelSelector()
         self.api_key_manager = ApiKeyManager(self.env_manager)
-        self.template_manager = TemplateManager(self.paths.templates_dir)
+        self.template = Template(self.paths.templates_dir)
     
     def init_config(self):
         self.paths.ensure_directories()
         
         selected_model = self.model_selector.select_model()
         api_key = self.api_key_manager.setup_api_key(selected_model)
-        commit_template_path = self.template_manager.setup_template()
         
-        config = ConfigBuilder.build_config(selected_model, commit_template_path)
+        template = self.template.setup_interactive()
+        
+        config = ConfigBuilder.build_config(selected_model, template.path)
         
         self._save_config(config)
         if api_key:
@@ -321,7 +357,7 @@ class GitkConfig:
         return config
     
     def load_template_from_file(self, file_path: str | Path) -> str:
-        return self.template_manager.load_from_file(file_path)
+        return self.template.load_template_from_file(file_path)
     
     def _save_config(self, config: dict):
         with open(self.paths.config_file, 'w', encoding="utf-8") as f:
