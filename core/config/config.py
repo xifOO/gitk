@@ -64,7 +64,7 @@ class GitkConfig:
     
     def __init__(self):
         self._config_dir = ConfigDirectory()
-        self.env_manager = EnvFile()
+        self.env_file = EnvFile()
         self.templates_dir = TemplateDirectory()
     
     def save_config(self, selected_model: SupportedModel, template: Template, api_key: str | None = None) -> None:
@@ -73,14 +73,14 @@ class GitkConfig:
         config.save_to_file(self._config_dir.config_file())
 
         if api_key:
-            self.env_manager.save_key(selected_model.value.provider, api_key)
+            self.env_file.save_key(selected_model.value.provider, api_key)
     
     def load_config(self) -> Config:
         if not self._config_dir.config_file().exists():
             raise FileNotFoundError("Конфиг не инициализирован. Запустите 'gitk init'")
         
         config = Config.from_yaml(self._config_dir.config_file())
-        self.env_manager.load_to_environment()
+        self.env_file.load_to_environment()
         return config
     
     def load_model_config(self, config_data: Dict[str, Any]) -> ModelConfig:
