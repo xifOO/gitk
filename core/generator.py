@@ -26,7 +26,7 @@ class CommitGenerator:
         template_path = config_data.get("commit_template_path")
 
         if not template_path:
-            raise ValueError("Путь к шаблону коммита не найден в конфиге")
+            raise ValueError("Commit template path not found in the config")
 
         template = TemplateDirectory().load_template_from_file(template_path)
         template_content = template.load_content()
@@ -46,12 +46,12 @@ class CommitGenerator:
     @staticmethod
     def _read_diff_from_stdin() -> str:
         if sys.stdin.isatty():
-            raise ValueError("Данные должны поступать через pipe. Использование: git diff | python generator.py")
+            raise ValueError("Data must be provided via pipe. Usage: git diff | python generator.py")
         
         diff = sys.stdin.read().strip()
         
         if not diff:
-            raise ValueError("Пустой diff. Нет изменений для анализа.")
+            raise ValueError("Empty diff. No changes to analyze.")
         
         return diff
 

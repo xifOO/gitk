@@ -14,7 +14,7 @@ class Template:
     @property
     def path(self) -> Path:
         if not self._name:
-            raise ValueError("Имя шаблона не задано")
+            raise ValueError("Template name is not specified")
         return self._dir / f"{self._name}.txt"
 
     @property
@@ -31,14 +31,14 @@ class Template:
         try:
             return self.path.read_text(encoding='utf-8')
         except FileNotFoundError:
-            raise FileNotFoundError(f"Файл шаблона не найден: {self.path}")
+            raise FileNotFoundError(f"Template file not found: {self.path}")
         except Exception as e:
-            raise Exception(f"Ошибка чтения файла {self.path}: {e}")
+            raise Exception(f"Error read file {self.path}: {e}")
 
     def save(self, content: Optional[str] = None) -> None:
         content_to_save = content or self._content
         if content_to_save is None:
-            raise ValueError("Нет содержимого для сохранения")
+            raise ValueError("No content to save")
 
         try:
             self.path.write_text(content_to_save, encoding='utf-8')

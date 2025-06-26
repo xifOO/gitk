@@ -15,7 +15,7 @@ class TemplatesCLI:
         self.templates_dir = TemplateDirectory()
     
     def setup_interactive(self) -> Template:
-        qprint("\n=== Настройка шаблона коммитов ===")
+        qprint("\n=== Commit Template Setup ===")
 
         handlers = {
             "default": self.templates_dir.default_template,
@@ -25,14 +25,14 @@ class TemplatesCLI:
         }
 
         choices = [
-            questionary.Choice("Использовать стандартный шаблон", value="default"),
-            questionary.Choice("Выбрать из созданных шаблонов", value="list"),
-            questionary.Choice("Создать собственный шаблон", value="custom"),
-            questionary.Choice("Загрузить шаблон из файла", value="file")
+            questionary.Choice("Use the default template", value="default"),
+            questionary.Choice("Select from existing templates", value="list"),
+            questionary.Choice("Create a custom template", value="custom"),
+            questionary.Choice("Load template from file", value="file")
         ]
 
         choice = questionary.select(
-            "Выберите опцию для шаблона коммитов:",
+            "Select an option for the commit template:",
             choices=choices
         ).ask()
 
@@ -42,7 +42,7 @@ class TemplatesCLI:
     def _select_from_existing(self) -> Template:
         templates = self.templates_dir.all_templates()
         if not templates:
-            raise FileNotFoundError("Нет доступных шаблонов")
+            raise FileNotFoundError("No templates available")
 
         choices = [
             questionary.Choice(title=template.name, value=template)
@@ -50,7 +50,7 @@ class TemplatesCLI:
         ]
 
         selected = questionary.select(
-            "Выберите шаблон из списка:",
+            "Select a template from the list:",
             choices=choices
         ).ask()
 
@@ -64,15 +64,15 @@ class TemplatesCLI:
     
     def _load_from_external_file(self) -> Template:
         file_path = questionary.path(
-            "Укажите путь к файлу шаблона:",
-            validate=lambda x: Path(x).exists() or "Файл не найден"
+            "Specify the path to the template file:",
+            validate=lambda x: Path(x).exists() or "File not found"
         ).ask()
 
         path = Path(file_path)
         return self.templates_dir.create_template(path.stem, path.read_text())
     
     def _get_content_from_input(self) -> str:
-        qprint("Введите строки шаблона (пустая строка — завершить):")
+        qprint("Enter template lines (empty line to finish):")
         lines = []
         while True:
             line = input()
@@ -83,12 +83,12 @@ class TemplatesCLI:
 
     def _get_name_from_input(self) -> str:
         name = questionary.text(
-            "Введите имя файла для сохранения шаблона (без расширения):",
+            "Enter the filename to save the template (without extension):",
             default="custom_template"
         ).ask()
 
         if not re.match(r"^[\w\-\.]+$", name):
-            raise ValueError("Недопустимое имя файла")
+            raise ValueError("Invalid filename")
 
         return name
 
@@ -96,12 +96,12 @@ class TemplatesCLI:
 class ModelsCLI:
 
     def select_model(self) -> SupportedModel:
-        qprint("\n Выберите модель для генерации коммитов:")
+        qprint("\n Select a model for commit generation:")
         
         choices = self._build_model_choices()
         
         return questionary.select(
-            "Выберите модель",
+            "Select model",
             choices=choices,
             use_indicator=True,
             use_shortcuts=True,
@@ -114,7 +114,7 @@ class ModelsCLI:
         paid_models = SupportedModel.get_paid_models()
 
         if free_models:
-            choices.append(questionary.Separator("=== Бесплатные модели ==="))
+            choices.append(questionary.Separator("=== Free models ==="))
             choices.extend([
                 questionary.Choice(
                     title=f"{model.value.name} | {model.value.description}", 
@@ -123,7 +123,7 @@ class ModelsCLI:
             ])
 
         if paid_models:
-            choices.append(questionary.Separator("=== Платные модели ==="))
+            choices.append(questionary.Separator("=== Paid models ==="))
             choices.extend([
                 questionary.Choice(
                     title=f"{model.value.name} | {model.value.description}", 
@@ -157,12 +157,12 @@ class ApiKeyCLI:
     
     def _should_replace_key(self, provider: str) -> bool:
         return questionary.confirm(
-            f"API ключ для {provider} уже найден. Хотите заменить его?",
+            f"An API key for {provider} was already found. Do you want to replace it?",
             default=False
         ).ask()
     
     def _get_api_key_from_user(self, provider: str) -> str:
         return questionary.text(
-            f"Введите API ключ для {provider}",
-            validate=lambda x: len(x.strip()) > 0 or "API ключ не может быть пустым"
+            f"Enter the API key for {provider}",
+            validate=lambda x: len(x.strip()) > 0 or "The API key cannot be empty"
         ).ask()

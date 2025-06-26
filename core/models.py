@@ -26,7 +26,7 @@ class ModelConfig(BaseModel, validate_assignment = True):
         model_json = config_data.get("model_config_data", {})
         
         if not model_json:
-            raise ValueError("Конфигурация модели отсутствует")
+            raise ValueError("Model configuration is missing")
 
         return cls(
             **model_json
@@ -41,7 +41,7 @@ class SupportedModel(Enum):
         api_base="https://openrouter.ai/api/v1",  
         model_id="qwen/qwen-2.5-72b-instruct:free", 
         is_free=True,
-        description="Бесплатная модель от Qwen с лимитами."
+        description="Free model from Qwen with limits."
     )
 
     GEMMA_MODEL = ModelConfig(
@@ -50,7 +50,7 @@ class SupportedModel(Enum):
         api_base="https://openrouter.ai/api/v1",
         model_id="google/gemma-3n-e4b-it:free",
         is_free=True,
-        description="Поддерживает мультимодальные входные данные, что позволяет выполнять различные задачи, такие как генерация текста."
+        description="Supports multimodal input, enabling various tasks such as text generation."
     )
 
     @classmethod

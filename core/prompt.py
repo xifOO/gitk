@@ -10,7 +10,7 @@ def get_commit_instruction(
         instruction: Optional[str] = None
 ):
     if not diff.strip():
-        raise ValueError("Diff пустой. Убедитесь что есть изменения для commit.")
+        raise ValueError("Empty diff. No changes to analyze.")
     
     _commit_template: str = commit_template or _DEFAULT_COMMIT_TEMPLATE
 

@@ -77,7 +77,7 @@ class GitkConfig:
     
     def load_config(self) -> Config:
         if not self._config_dir.config_file().exists():
-            raise FileNotFoundError("Конфиг не инициализирован. Запустите 'gitk init'")
+            raise FileNotFoundError("Config is not initialized. Run 'gitk init'")
         
         config = Config.from_yaml(self._config_dir.config_file())
         self.env_file.load_to_environment()

@@ -28,9 +28,6 @@ class BashFuntionCaller:
 def clean_diff(diff: str) -> str:
     MAX_DIFF_LENGTH = 3000
 
-    if not diff.strip():
-        raise ValueError("Diff пустой. Убедитесь что есть изменения для commit.")
-
     if len(diff) > MAX_DIFF_LENGTH:
         lines = diff.split("\n")
         truncated_lines = []

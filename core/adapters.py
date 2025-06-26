@@ -88,6 +88,6 @@ class ModelFactory:
         adapter_class = cls.ADAPTERS.get(config.provider)
         
         if not adapter_class:
-            raise ValueError(f"Неподдерживаемый провайдер: {config.provider}")
+            raise ValueError(f"Unsupported provider: {config.provider}")
         
         return adapter_class(config)

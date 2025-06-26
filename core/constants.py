@@ -19,5 +19,5 @@ Requirements:
 
 
 PROVIDER_INSTRUCTIONS = {
-    "openrouter": "OpenRouter → Получите ключ на: https://openrouter.ai",
+    "openrouter": "OpenRouter → Get your key at: https://openrouter.ai",
 }
