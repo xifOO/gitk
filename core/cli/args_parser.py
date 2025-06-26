@@ -10,7 +10,7 @@ def parse_arguments():
                 git diff | python generator.py
                 git diff | python generator.py --detailed
                 git diff | python generator.py --instruction "use conventional commits"
-                git diff | python generator.py --template-file custom_template.txt
+                git diff | python generator.py --template-file custom_template.tpl
             """
     )
 
