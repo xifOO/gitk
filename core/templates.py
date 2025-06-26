@@ -43,9 +43,7 @@ class Template:
         try:
             self.path.write_text(content_to_save, encoding='utf-8')
             self._content = content_to_save
-            print(f"Шаблон сохранен в: {self.path}")
         except Exception as e:
-            print(f"Ошибка сохранения шаблона: {e}")
             raise
 
     def exists(self) -> bool:
