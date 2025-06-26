@@ -1,10 +1,7 @@
 import os
-from pathlib import Path
 import re
 import shlex
 import subprocess
-
-import yaml
 
 from core import config
 
@@ -43,12 +40,6 @@ def clean_diff(diff: str) -> str:
         diff = '\n'.join(truncated_lines) + '\n\n[... diff truncated for length ...]'
 
     return diff
-
-
-def read_yaml(file_path: str | Path) -> dict:
-    with open(file_path, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-        return config
 
 
 def clean_message(message: str) -> str:
