@@ -1,0 +1,44 @@
+name: Run Pytest
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r dev-requirements.txt || true
+
+    - name: Prepare basic template
+      run: |
+        mkdir -p ~/.gitk_config/templates
+        cat > ~/.gitk_config/templates/template.tpl <<EOF
+
+        Hello, this is a basic template.
+        Use this as a starting point for your prompt.
+
+        Input:
+        {{ input }}
+
+        Output:
+        {{ output }}
+        EOF
+        touch ~/.gitk_config/templates/default_template.tpl
+        touch ~/.gitk_config/templates/valid_name.tpl
+
+    - name: Run tests
+      run: pytest -v
