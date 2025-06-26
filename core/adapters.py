@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import os
 from typing import Optional
-from prompt import get_commit_instruction
+from core.prompt import get_commit_instruction
 
 import requests
 
