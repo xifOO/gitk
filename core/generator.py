@@ -6,7 +6,7 @@ from core.models import Config
 from core.adapters import ModelFactory
 from core.cli.args_parser import parse_arguments
 from core.templates import TemplateDirectory
-from core.utils import clean_diff, clean_message
+from core.utils import clean_diff, clean_message, qprint
 
 
 class CommitGenerator:
@@ -28,14 +28,16 @@ class CommitGenerator:
         if not template_path:
             raise ValueError("Путь к шаблону коммита не найден в конфиге")
 
-        commit_template = TemplateDirectory().load_template_from_file(template_path).load_content()
+        template = TemplateDirectory().load_template_from_file(template_path)
+        template_content = template.load_content()
+
 
         adapter = ModelFactory.create_adapter(model_config)
 
         commit_message = adapter.generate_commit_message(
             diff=cleaned_diff,
             detailed=args.detailed,
-            commit_template=commit_template,
+            commit_template=template_content,
             instruction=args.instruction
         )
 
@@ -70,15 +72,13 @@ def main():
             template = templates_cli.setup_interactive()
 
             config.save_config(selected_model, template, api_key)
-
-            print(f"GITK настроен с моделью: {selected_model.value.name}")
             return
 
         generator = CommitGenerator(config)
         commit_message = generator.generate_commit_message(args)
 
-        print(commit_message)
-        
+        qprint(commit_message)
+
     except Exception as e:
         raise Exception
     
