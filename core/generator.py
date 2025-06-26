@@ -1,76 +1,40 @@
 import sys
 from typing import Optional
 from core.config import GitkConfig
-from core.models import ModelConfig
+from core.models import Config
 from core.adapters import ModelFactory
 from core.args_parser import parse_arguments
 from core.utils import clean_diff, clean_message
 
 
-class ConfigManager:
+class CommitGenerator:
 
-    def __init__(self) -> None:
-        self.config_loader = GitkConfig()
+    def __init__(self):
+        self.config = GitkConfig()
 
-    def load_config(self) -> tuple[dict, ModelConfig]:
-        config_data = self.config_loader.load_config()
-        model_config = self._create_model_config(config_data)
-        return config_data, model_config
-    
-    def _create_model_config(self, config_data: dict) -> ModelConfig:
-        model_json = config_data.get("model_config", {})
-        provider = config_data.get("provider")
-        
-        if not provider:
-            raise ValueError("Провайдер отсутствует в конфигурации")
-        
-        if not model_json:
-            raise ValueError("Конфигурация модели отсутствует")
-        
-        return ModelConfig(
-            name=model_json.get("name"),
-            provider=provider,
-            api_base=model_json.get("api_base"),
-            model_id=model_json.get("model_id"),
-            is_free=model_json.get("is_free"),
-            max_tokens=model_json.get("max_tokens", 150),
-            temperature=model_json.get("temperature", 0.4),
-            description=""
-        )
-
-
-class TemplateManager:
-
-    def __init__(self, config_loader: GitkConfig):
-        self.config_loader = config_loader
-    
     def get_commit_template(self, args, config_data: dict) -> Optional[str]:
         if args.template:
             return args.template
         
         if args.template_file:
-            return self.config_loader.load_template_from_file(args.template_file)
+            return self.config.load_template_from_file(args.template_file)
         
         template_path = config_data.get("commit_template_path")
         if template_path:
-            return self.config_loader.load_template_from_file(template_path)
+            return self.config.load_template_from_file(template_path)
         
         return None
-
-
-class CommitGenerator:
-
-    def __init__(self):
-        self.config_manager = ConfigManager()
-        self.template_manager = TemplateManager(self.config_manager.config_loader)
     
-    def generate_commit_message(self, args):
+    def generate_commit_message(self, args) -> str:
         diff = self._read_diff_from_stdin()
         cleaned_diff = clean_diff(diff)
 
-        config_data, model_config = self.config_manager.load_config()
+        config: Config = self.config.load_config()
+        config_data = config.model_dump()
 
-        commit_template = self.template_manager.get_commit_template(args, config_data)
+        model_config = self.config.load_model_config(config_data)
+
+        commit_template = self.get_commit_template(args, config_data)
 
         adapter = ModelFactory.create_adapter(model_config)
 
