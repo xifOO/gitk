@@ -1,30 +1,19 @@
 import sys
-from typing import Optional
-from core.config import GitkConfig
+
+from core.cli.cli import ApiKeyCLI, ModelsCLI, TemplatesCLI
+from core.config.config import GitkConfig
 from core.models import Config
 from core.adapters import ModelFactory
-from core.args_parser import parse_arguments
+from core.cli.args_parser import parse_arguments
+from core.templates import TemplateDirectory
 from core.utils import clean_diff, clean_message
 
 
 class CommitGenerator:
 
-    def __init__(self):
-        self.config = GitkConfig()
+    def __init__(self, config: GitkConfig):
+        self.config = config
 
-    def get_commit_template(self, args, config_data: dict) -> Optional[str]:
-        if args.template:
-            return args.template
-        
-        if args.template_file:
-            return self.config.load_template_from_file(args.template_file)
-        
-        template_path = config_data.get("commit_template_path")
-        if template_path:
-            return self.config.load_template_from_file(template_path)
-        
-        return None
-    
     def generate_commit_message(self, args) -> str:
         diff = self._read_diff_from_stdin()
         cleaned_diff = clean_diff(diff)
@@ -34,7 +23,12 @@ class CommitGenerator:
 
         model_config = self.config.load_model_config(config_data)
 
-        commit_template = self.get_commit_template(args, config_data)
+        template_path = config_data.get("commit_template_path")
+
+        if not template_path:
+            raise ValueError("Путь к шаблону коммита не найден в конфиге")
+
+        commit_template = TemplateDirectory().load_template_from_file(template_path).load_content()
 
         adapter = ModelFactory.create_adapter(model_config)
 
@@ -63,8 +57,24 @@ class CommitGenerator:
 def main():
     try:
         args = parse_arguments()
+        config = GitkConfig()
+        
+        if args.init:
+            
+            templates_cli = TemplatesCLI()
+            models_cli = ModelsCLI()
+            api_key_cli = ApiKeyCLI()
 
-        generator = CommitGenerator()
+            selected_model = models_cli.select_model()
+            api_key = api_key_cli.setup_api_key(selected_model)
+            template = templates_cli.setup_interactive()
+
+            config.save_config(selected_model, template, api_key)
+
+            print(f"GITK настроен с моделью: {selected_model.value.name}")
+            return
+
+        generator = CommitGenerator(config)
         commit_message = generator.generate_commit_message(args)
 
         print(commit_message)
