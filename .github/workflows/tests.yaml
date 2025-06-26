@@ -23,22 +23,37 @@ jobs:
         pip install -r requirements.txt
         pip install -r dev-requirements.txt || true
 
-    - name: Prepare basic template
+    - name: Prepare basic template files
       run: |
         mkdir -p ~/.gitk_config/templates
-        cat > ~/.gitk_config/templates/template.tpl <<EOF
 
-        Hello, this is a basic template.
-        Use this as a starting point for your prompt.
+        cat > ~/.gitk_config/templates/default_template.tpl <<EOF
+          Hello, this is the default template.
+          Input:
+          {{ input }}
 
-        Input:
-        {{ input }}
-
-        Output:
-        {{ output }}
+          Output:
+          {{ output }}
         EOF
-        touch ~/.gitk_config/templates/default_template.tpl
-        touch ~/.gitk_config/templates/valid_name.tpl
+
+        cat > ~/.gitk_config/templates/template.tpl <<EOF
+          Hello, this is a basic template.
+          Input:
+          {{ input }}
+
+          Output:
+          {{ output }}
+        EOF
+
+        cat > ~/.gitk_config/templates/valid_name.tpl <<EOF
+          Valid name template content.
+          Input:
+          {{ input }}
+
+          Output:
+          {{ output }}
+        EOF
+
 
     - name: Run tests
       run: pytest -v
