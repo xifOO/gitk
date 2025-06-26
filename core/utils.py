@@ -3,6 +3,8 @@ import re
 import shlex
 import subprocess
 
+import questionary
+
 
 
 class BashFuntionCaller:
@@ -47,3 +49,7 @@ def clean_message(message: str) -> str:
     message = re.sub(r'^```.*?\n', '', message, flags=re.MULTILINE)
     message = re.sub(r'\n```$', '', message)
     return message.strip()
+
+
+def qprint(content: str) -> None:
+    questionary.print(content, style="bold")
