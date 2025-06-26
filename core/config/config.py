@@ -13,8 +13,8 @@ class EnvFile:
     ENV_HEADER = "# GitK API KEYS\n"
     
     def __init__(self):
-        self.config_dir = ConfigDirectory()
-        self.env_file = self.config_dir.config_dir() / ".env"
+        self._config_dir = ConfigDirectory()
+        self.env_file = self._config_dir.config_dir() / ".env"
     
     def get_env_var_name(self, provider: str) -> str:
         return f"{self.ENV_PREFIX}_{provider.upper()}_API_KEY"
@@ -63,23 +63,23 @@ class EnvFile:
 class GitkConfig:
     
     def __init__(self):
-        self.paths = ConfigDirectory()
+        self._config_dir = ConfigDirectory()
         self.env_manager = EnvFile()
         self.templates_dir = TemplateDirectory()
     
     def save_config(self, selected_model: SupportedModel, template: Template, api_key: str | None = None) -> None:
         
         config = Config.build_config(selected_model, template.path)
-        config.save_to_file(self.paths.config_file())
+        config.save_to_file(self._config_dir.config_file())
 
         if api_key:
             self.env_manager.save_key(selected_model.value.provider, api_key)
     
     def load_config(self) -> Config:
-        if not self.paths.config_file().exists():
-            raise FileNotFoundError("GitK не инициализирован. Запустите 'gitk init'")
+        if not self._config_dir.config_file().exists():
+            raise FileNotFoundError("Конфиг не инициализирован. Запустите 'gitk init'")
         
-        config = Config.from_yaml(self.paths.config_file())
+        config = Config.from_yaml(self._config_dir.config_file())
         self.env_manager.load_to_environment()
         return config
     
