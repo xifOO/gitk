@@ -7,6 +7,7 @@ from core.config.config import EnvFile
 from core.constants import PROVIDER_INSTRUCTIONS
 from core.models import SupportedModel
 from core.templates import TemplateDirectory, Template
+from core.utils import qprint
 
 
 class TemplatesCLI:
@@ -14,11 +15,11 @@ class TemplatesCLI:
         self.templates_dir = TemplateDirectory()
     
     def setup_interactive(self) -> Template:
-        print("\n=== Настройка шаблона коммитов ===")
+        qprint("\n=== Настройка шаблона коммитов ===")
 
         handlers = {
             "default": self.templates_dir.default_template,
-            "list": self.templates_dir.all_templates,
+            "list": self._select_from_existing,
             "custom": self._create_custom_template,
             "file": self._load_from_external_file
         }
@@ -71,7 +72,7 @@ class TemplatesCLI:
         return self.templates_dir.create_template(path.stem, path.read_text())
     
     def _get_content_from_input(self) -> str:
-        print("Введите строки шаблона (пустая строка — завершить):")
+        qprint("Введите строки шаблона (пустая строка — завершить):")
         lines = []
         while True:
             line = input()
@@ -95,7 +96,7 @@ class TemplatesCLI:
 class ModelsCLI:
 
     def select_model(self) -> SupportedModel:
-        print("\n Выберите модель для генерации коммитов:")
+        qprint("\n Выберите модель для генерации коммитов:")
         
         choices = self._build_model_choices()
         
@@ -152,7 +153,7 @@ class ApiKeyCLI:
 
     def _show_provider_instructions(self, provider: str, model_name: str):
         if provider in PROVIDER_INSTRUCTIONS:
-            print(f"\n{model_name}: {PROVIDER_INSTRUCTIONS[provider]}\n")
+            qprint(f"\n{model_name}: {PROVIDER_INSTRUCTIONS[provider]}\n")
     
     def _should_replace_key(self, provider: str) -> bool:
         return questionary.confirm(
