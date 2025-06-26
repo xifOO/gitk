@@ -1,12 +1,11 @@
 import re
-import yaml
+from pytest import Config
 import os
-from typing import Dict, Optional, Self
+from typing import Any, Dict, Optional, Self
 import questionary
 from pathlib import Path
 
-from core.models import SupportedModel
-from core.utils import read_yaml
+from core.models import ModelConfig, SupportedModel, Config
 
 
 MAX_DIFF_LENGTH = 3000
@@ -301,25 +300,6 @@ class Template:
         if not re.match(r"^[\w\-\.]+$", name):
             raise ValueError("Недопустимое имя файла")
         return name
-    
-
-class ConfigBuilder:
-    
-    @staticmethod
-    def build_config(selected_model: SupportedModel, template_path: Path) -> dict:
-        return {
-            "model": selected_model.name,
-            "provider": selected_model.value.provider,
-            "model_config": {
-                "name": selected_model.value.name,
-                "api_base": selected_model.value.api_base,
-                "model_id": selected_model.value.model_id,
-                "is_free": selected_model.value.is_free,
-                "max_tokens": selected_model.value.max_tokens,
-                "temperature": selected_model.value.temperature
-            },
-            "commit_template_path": str(template_path)
-        }
 
 
 class GitkConfig:
@@ -339,29 +319,30 @@ class GitkConfig:
         
         template = self.template.setup_interactive()
         
-        config = ConfigBuilder.build_config(selected_model, template.path)
+        config = Config.build_config(selected_model, template.path)
         
-        self._save_config(config)
+        config.save_to_file(self.paths.config_file)
+
         if api_key:
             self.env_manager.save_key(selected_model.value.provider, api_key)
         
         self._print_success_message(selected_model)
     
-    def load_config(self) -> dict:
+    def load_config(self) -> Config:
         if not self.paths.config_file.exists():
             raise FileNotFoundError("GitK не инициализирован. Запустите 'gitk init'")
         
-        config = read_yaml(self.paths.config_file)
+        config = Config.from_yaml(self.paths.config_file)
         self.env_manager.load_to_environment()
         
         return config
     
+    def load_model_config(self, config_data: Dict[str, Any]) -> ModelConfig:
+        model_config = ModelConfig.build_model_config(config_data)
+        return model_config
+
     def load_template_from_file(self, file_path: str | Path) -> str:
         return self.template.load_template_from_file(file_path)
-    
-    def _save_config(self, config: dict):
-        with open(self.paths.config_file, 'w', encoding="utf-8") as f:
-            yaml.safe_dump(config, f, sort_keys=False, allow_unicode=True)
     
     def _print_success_message(self, selected_model: SupportedModel):
         print(f"GITK настроен с моделью: {selected_model.value.name}")
