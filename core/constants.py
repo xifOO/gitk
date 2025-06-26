@@ -16,3 +16,8 @@ Requirements:
     Git Diff:
 
 """
+
+
+PROVIDER_INSTRUCTIONS = {
+    "openrouter": "OpenRouter → Получите ключ на: https://openrouter.ai",
+}
