@@ -11,4 +11,4 @@ init_i18n
 echo "$(t "Welcome to GitK")"
 echo ""
 
-PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/init_config.py"
+PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/core/generator.py" --init
