@@ -15,7 +15,7 @@ class Template:
     def path(self) -> Path:
         if not self._name:
             raise ValueError("Template name is not specified")
-        return self._dir / f"{self._name}.txt"
+        return self._dir / f"{self._name}.tpl"
 
     @property
     def content(self) -> str:
@@ -63,7 +63,7 @@ class TemplateDirectory:
         return Template(path.parent, path.stem)
 
     def all_templates(self) -> list[Template]:
-        return [Template(self._templates_dir, p.stem) for p in self._templates_dir.glob("*.txt")]
+        return [Template(self._templates_dir, p.stem) for p in self._templates_dir.glob("*.tpl")]
     
     def get_template(self, name: str) -> Template:
         return Template(self._templates_dir, name)
