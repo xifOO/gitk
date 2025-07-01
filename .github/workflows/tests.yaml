@@ -32,7 +32,7 @@ jobs:
           pip install ruff
 
       - name: Run Ruff
-        run: ruff check . --format github
+        run: ruff check .
 
   test:
     name: Run Tests
