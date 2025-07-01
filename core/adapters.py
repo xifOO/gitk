@@ -1,11 +1,11 @@
-from abc import ABC, abstractmethod
 import os
+from abc import ABC, abstractmethod
 from typing import Optional
-from core.prompt import get_commit_instruction
 
 import requests
 
 from core.models import ModelConfig
+from core.prompt import get_commit_instruction
 
 
 class ModelAdapter(ABC):
@@ -68,7 +68,8 @@ class OpenRouterAdapter(ModelAdapter):
         response = requests.post(
             f"{self.config.api_base}/chat/completions",
             headers=headers,
-            json=data
+            json=data,
+            timeout=30
         )
         
         if response.status_code != 200:

@@ -30,10 +30,10 @@ class Template:
     def load_content(self) -> str:
         try:
             return self.path.read_text(encoding='utf-8')
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Template file not found: {self.path}")
+        except FileNotFoundError as file_error:
+            raise FileNotFoundError(f"Template file not found: {self.path}") from file_error
         except Exception as e:
-            raise Exception(f"Error read file {self.path}: {e}")
+            raise Exception(f"Error read file {self.path}: {e}") from e
 
     def save(self, content: Optional[str] = None) -> None:
         content_to_save = content or self._content
@@ -43,7 +43,7 @@ class Template:
         try:
             self.path.write_text(content_to_save, encoding='utf-8')
             self._content = content_to_save
-        except Exception as e:
+        except Exception:
             raise
 
     def exists(self) -> bool:

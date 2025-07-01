@@ -1,12 +1,12 @@
-from pathlib import Path
 import re
+from pathlib import Path
 
 import questionary
 
 from core.config.config import EnvFile
 from core.constants import PROVIDER_INSTRUCTIONS
 from core.models import SupportedModel
-from core.templates import TemplateDirectory, Template
+from core.templates import Template, TemplateDirectory
 from core.utils import qprint
 
 

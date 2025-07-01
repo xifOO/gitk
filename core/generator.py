@@ -1,10 +1,10 @@
 import sys
 
+from core.adapters import ModelFactory
+from core.cli.args_parser import parse_arguments
 from core.cli.cli import ApiKeyCLI, ModelsCLI, TemplatesCLI
 from core.config.config import GitkConfig
 from core.models import Config
-from core.adapters import ModelFactory
-from core.cli.args_parser import parse_arguments
 from core.templates import TemplateDirectory
 from core.utils import clean_diff, clean_message, qprint
 
@@ -80,7 +80,7 @@ def main():
         qprint(commit_message)
 
     except Exception as e:
-        raise Exception
+        raise Exception from e
     
 
 if __name__ == "__main__":

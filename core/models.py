@@ -1,8 +1,9 @@
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Self
-from pydantic import BaseModel, field_validator
+
 import yaml
+from pydantic import BaseModel, field_validator
 
 
 class ModelConfig(BaseModel, validate_assignment = True):

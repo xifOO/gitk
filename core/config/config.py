@@ -1,9 +1,8 @@
-from pytest import Config
 import os
 from typing import Any, Dict
 
 from core.config.paths import ConfigDirectory
-from core.models import ModelConfig, SupportedModel, Config
+from core.models import Config, ModelConfig, SupportedModel
 from core.templates import Template, TemplateDirectory
 
 
