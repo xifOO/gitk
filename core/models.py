@@ -33,7 +33,7 @@ class ModelConfig(BaseModel):
             **model_json
         )    
     
-    class Config:
+    class PydanticConfig:
         validate_assignment = True
 
 
@@ -106,5 +106,5 @@ class Config(BaseModel):
         with open(file_path, 'w', encoding="utf-8") as f:
             yaml.safe_dump(self.model_dump(), f, sort_keys=False, allow_unicode=True)
     
-    class Config:
+    class PydanticConfig:
         validate_assignment = True
