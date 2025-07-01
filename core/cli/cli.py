@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from typing import List, Union
 
 import questionary
 
@@ -11,7 +12,7 @@ from core.utils import qprint
 
 
 class TemplatesCLI:
-    def __init__(self):
+    def __init__(self) -> None:
         self.templates_dir = TemplateDirectory()
     
     def setup_interactive(self) -> Template:
@@ -107,8 +108,8 @@ class ModelsCLI:
             use_shortcuts=True,
         ).ask()
     
-    def _build_model_choices(self) -> list:
-        choices = []
+    def _build_model_choices(self) -> List[Union[questionary.Separator, questionary.Choice]]:
+        choices: List[Union[questionary.Separator, questionary.Choice]] = []
         
         free_models = SupportedModel.get_free_models()
         paid_models = SupportedModel.get_paid_models()
@@ -135,7 +136,7 @@ class ModelsCLI:
 
 
 class ApiKeyCLI:
-    def __init__(self):
+    def __init__(self) -> None:
         self.env_file = EnvFile()
     
     def setup_api_key(self, model: SupportedModel) -> str:
@@ -151,7 +152,7 @@ class ApiKeyCLI:
         
         return self._get_api_key_from_user(provider)
 
-    def _show_provider_instructions(self, provider: str, model_name: str):
+    def _show_provider_instructions(self, provider: str, model_name: str) -> None: 
         if provider in PROVIDER_INSTRUCTIONS:
             qprint(f"\n{model_name}: {PROVIDER_INSTRUCTIONS[provider]}\n")
     

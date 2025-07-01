@@ -11,7 +11,7 @@ class EnvFile:
     ENV_PREFIX = "GITK"
     ENV_HEADER = "# GitK API KEYS\n"
     
-    def __init__(self):
+    def __init__(self) -> None:
         self._config_dir = ConfigDirectory()
         self.env_file = self._config_dir.config_dir() / ".env"
     
@@ -26,19 +26,19 @@ class EnvFile:
         env_vars = self._read_env_file()
         return env_vars.get(env_var, "")
     
-    def save_key(self, provider: str, api_key: str):
+    def save_key(self, provider: str, api_key: str) -> None:
         env_var = self.get_env_var_name(provider)
         env_vars = self._read_env_file()
         env_vars[env_var] = api_key
         self._write_env_file(env_vars)
     
-    def load_to_environment(self):
+    def load_to_environment(self) -> None:
         env_vars = self._read_env_file()
         for key, value in env_vars.items():
             os.environ[key] = value
     
     def _read_env_file(self) -> Dict[str, str]:
-        env_vars = {}
+        env_vars: Dict[str, str] = {}
         
         if not self.env_file.exists():
             return env_vars
@@ -52,7 +52,7 @@ class EnvFile:
                     
         return env_vars
     
-    def _write_env_file(self, env_vars: Dict[str, str]):
+    def _write_env_file(self, env_vars: Dict[str, str]) -> None:
         with open(self.env_file, 'w', encoding="utf-8") as f:
             f.write(self.ENV_HEADER)
             for key, value in env_vars.items():
@@ -61,7 +61,7 @@ class EnvFile:
 
 class GitkConfig:
     
-    def __init__(self):
+    def __init__(self) -> None:
         self._config_dir = ConfigDirectory()
         self.env_file = EnvFile()
         self.templates_dir = TemplateDirectory()

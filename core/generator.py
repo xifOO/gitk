@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 from core.adapters import ModelFactory
@@ -11,10 +12,10 @@ from core.utils import clean_diff, clean_message, qprint
 
 class CommitGenerator:
 
-    def __init__(self, config: GitkConfig):
+    def __init__(self, config: GitkConfig) -> None:
         self.config = config
 
-    def generate_commit_message(self, args) -> str:
+    def generate_commit_message(self, args: argparse.Namespace) -> str:
         diff = self._read_diff_from_stdin()
         cleaned_diff = clean_diff(diff)
 
@@ -56,7 +57,7 @@ class CommitGenerator:
         return diff
 
 
-def main():
+def main() -> None:
     try:
         args = parse_arguments()
         config = GitkConfig()

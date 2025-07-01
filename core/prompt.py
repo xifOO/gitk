@@ -8,7 +8,7 @@ def get_commit_instruction(
         detailed: bool = False,
         commit_template: Optional[str] = None,
         instruction: Optional[str] = None
-):
+) -> str:
     if not diff.strip():
         raise ValueError("Empty diff. No changes to analyze.")
     

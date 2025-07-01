@@ -51,11 +51,11 @@ class Template:
 
 
 class TemplateDirectory:
-    def __init__(self):
+    def __init__(self) -> None:
         self.config_dir = ConfigDirectory().config_dir()
         self._templates_dir = self.config_dir / "templates"
 
-    def ensure(self):
+    def ensure(self) -> None:
         self._templates_dir.mkdir(parents=True, exist_ok=True)
     
     def load_template_from_file(self, file_path: str | Path) -> Template:

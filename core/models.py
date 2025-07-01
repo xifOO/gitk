@@ -17,7 +17,7 @@ class ModelConfig(BaseModel, validate_assignment = True):
     description: str = ""
 
     @field_validator('name', 'provider', 'api_base', 'model_id')
-    def strip_strings(cls, v):
+    def strip_strings(cls, v: str) -> str:
         if isinstance(v, str):
             return v.strip()
         return v
@@ -55,11 +55,11 @@ class SupportedModel(Enum):
     )
 
     @classmethod
-    def get_free_models(cls):
+    def get_free_models(cls) -> list["SupportedModel"]:
         return [model for model in cls if model.value.is_free]
 
     @classmethod
-    def get_paid_models(cls):
+    def get_paid_models(cls) -> list["SupportedModel"]:
         return [model for model in cls if not model.value.is_free]
     
 
@@ -71,7 +71,7 @@ class Config(BaseModel, validate_assignment = True):
 
     @field_validator('model', 'provider', 'commit_template_path')
     @classmethod
-    def strip_strings(cls, v):
+    def strip_strings(cls, v: str) -> str:
         if isinstance(v, str):
             return v.strip()
         return v
