@@ -6,7 +6,7 @@ import yaml
 from pydantic import BaseModel, field_validator
 
 
-class ModelConfig(BaseModel, validate_assignment = True):
+class ModelConfig(BaseModel):
     name: str
     provider: str 
     api_base: str
@@ -32,6 +32,9 @@ class ModelConfig(BaseModel, validate_assignment = True):
         return cls(
             **model_json
         )    
+    
+    class Config:
+        validate_assignment = True
 
 
 class SupportedModel(Enum):
@@ -63,7 +66,7 @@ class SupportedModel(Enum):
         return [model for model in cls if not model.value.is_free]
     
 
-class Config(BaseModel, validate_assignment = True):
+class Config(BaseModel):
     model: str
     provider: str
     model_config_data: ModelConfig
@@ -102,3 +105,6 @@ class Config(BaseModel, validate_assignment = True):
     def save_to_file(self, file_path: Path) -> None:
         with open(file_path, 'w', encoding="utf-8") as f:
             yaml.safe_dump(self.model_dump(), f, sort_keys=False, allow_unicode=True)
+    
+    class Config:
+        validate_assignment = True
