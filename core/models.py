@@ -91,7 +91,7 @@ class Config(BaseModel):
         )
     
     @classmethod
-    def from_yaml(cls, file_path: Path) -> "Config":
+    def from_yaml(cls, file_path: Path) -> Self:
         with open(file_path, "r", encoding="utf-8") as f:
             raw_data = yaml.safe_load(f)
 
