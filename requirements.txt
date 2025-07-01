@@ -46,3 +46,4 @@ urllib3==2.4.0
 wcwidth==0.2.13
 xmod==1.8.1
 ruff==0.12.1
+mypy==1.16.1
