@@ -35,7 +35,7 @@ jobs:
         run: ruff check .
 
       - name: Run Mypy
-        run: mypy .
+        run: mypy . --install-types --non-interactive
 
   test:
     name: Run Tests
