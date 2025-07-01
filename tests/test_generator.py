@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from core.generator import CommitGenerator
 from core.models import Config, ModelConfig

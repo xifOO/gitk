@@ -1,6 +1,6 @@
 import pytest
-from pathlib import Path
-from core.models import ModelConfig, SupportedModel, Config
+
+from core.models import Config, ModelConfig, SupportedModel
 
 
 def test_modelconfig_build_model_config_valid():

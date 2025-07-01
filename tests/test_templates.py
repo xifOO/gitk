@@ -1,6 +1,8 @@
 import tempfile
-from core.templates import Template, TemplateDirectory
 from pathlib import Path
+
+from core.templates import Template, TemplateDirectory
+
 
 def test_template_save_and_load():
     with tempfile.TemporaryDirectory() as tempdir:

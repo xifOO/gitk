@@ -3,7 +3,7 @@ from typing import cast
 import pytest
 import questionary
 
-from core.cli.cli import TemplatesCLI, ModelsCLI, ApiKeyCLI
+from core.cli.cli import ApiKeyCLI, ModelsCLI, TemplatesCLI
 from core.config.config import EnvFile
 from core.models import SupportedModel
 from core.templates import Template

@@ -1,7 +1,10 @@
 import os
+
 import pytest
+
 from core.adapters import OpenRouterAdapter
 from core.models import ModelConfig
+
 
 @pytest.mark.integration
 def test_openrouter_generate_commit_message_real_api():

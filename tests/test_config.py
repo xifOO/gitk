@@ -2,9 +2,10 @@ import os
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
 from core.config.config import EnvFile, GitkConfig
-from core.models import SupportedModel, Config
-from core.templates import Template
+from core.models import SupportedModel
+
 
 def test_envfile_save_and_read():
     with tempfile.TemporaryDirectory() as tempdir:
