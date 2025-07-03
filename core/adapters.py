@@ -1,6 +1,6 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Dict, List, Optional
 
 import requests
 
@@ -44,6 +44,14 @@ class ModelAdapter(ABC):
     
 
 class OpenRouterAdapter(ModelAdapter):   
+
+    def __init__(self, config: ModelConfig):
+        super().__init__(config)
+        self.headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+
     def generate_commit_message(
         self, 
         diff: str, 
@@ -51,11 +59,7 @@ class OpenRouterAdapter(ModelAdapter):
         commit_template: Optional[str] = None,
         instruction: Optional[str] = None
     ) -> str:
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        
+    
         data = {
             "model": self.config.model_id,
             "messages": [
@@ -64,10 +68,10 @@ class OpenRouterAdapter(ModelAdapter):
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature
         }
-        
+
         response = requests.post(
             f"{self.config.api_base}/chat/completions",
-            headers=headers,
+            headers=self.headers,
             json=data,
             timeout=30
         )
