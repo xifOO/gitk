@@ -2,7 +2,7 @@ import os
 from typing import Any, Dict
 
 from core.config.paths import ConfigDirectory
-from core.models import Config, ModelConfig, SupportedModel
+from core.models import Config, ModelConfig
 from core.templates import Template, TemplateDirectory
 
 
@@ -66,13 +66,13 @@ class GitkConfig:
         self.env_file = EnvFile()
         self.templates_dir = TemplateDirectory()
     
-    def save_config(self, selected_model: SupportedModel, template: Template, api_key: str | None = None) -> None:
+    def save_config(self, selected_model: ModelConfig, template: Template, api_key: str | None = None) -> None:
         
         config = Config.build_config(selected_model, template.path)
         config.save_to_file(self._config_dir.config_file())
 
         if api_key:
-            self.env_file.save_key(selected_model.value.provider, api_key)
+            self.env_file.save_key(selected_model.provider, api_key)
     
     def load_config(self) -> Config:
         if not self._config_dir.config_file().exists():
