@@ -18,7 +18,7 @@ def test_openrouter_generate_commit_message_real_api():
         api_base="https://openrouter.ai/api/v1",
         model_id="qwen/qwen-2.5-72b-instruct:free", 
         is_free=False,
-        max_tokens=150,
+        context_length=150,
         temperature=0.7
     )
 

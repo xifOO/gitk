@@ -5,7 +5,7 @@ import questionary
 
 from core.cli.cli import ApiKeyCLI, ModelsCLI, TemplatesCLI
 from core.config.config import EnvFile
-from core.models import SupportedModel
+from core.models import ModelConfig
 from core.templates import Template
 
 
@@ -23,6 +23,18 @@ class DummyPrompt:
 
     def ask(self):
         return self.return_value
+
+
+def make_dummy_model() -> ModelConfig:
+    return ModelConfig(
+        model_id="dummy-model-id",
+        name="dummy-model",
+        api_base="https://example.com",
+        provider="testprovider",
+        description="Dummy model for testing",
+        context_length=2048,
+        is_free=True,
+    )
 
 
 def test_templatescli_select_from_existing(monkeypatch, tmp_path):
@@ -110,10 +122,11 @@ def test_templatescli_load_from_file(monkeypatch, tmp_path):
 
 def test_modelscli_select_model(monkeypatch):
     cli = ModelsCLI()
-    monkeypatch.setattr(questionary, "select", lambda *a, **k: DummySelect(SupportedModel.get_free_models()[0]))
+    dummy_model = make_dummy_model()
+    monkeypatch.setattr(questionary, "select", lambda *a, **k: DummySelect(dummy_model))
 
     selected = cli.select_model()
-    assert selected in SupportedModel
+    assert isinstance(selected, ModelConfig)
 
 
 class DummyEnvFile:
@@ -138,13 +151,13 @@ def test_apikeycli_return_existing_key(monkeypatch):
     dummy_env = DummyEnvFile()
     cli.env_file = cast(EnvFile, dummy_env)
 
-    model = SupportedModel.get_free_models()[0]
-    env_var = dummy_env.get_env_var_name(model.value.provider)
+    dummy_model = make_dummy_model()
+    env_var = dummy_env.get_env_var_name(dummy_model.provider)
     dummy_env.write_key(env_var, "existing_key")
 
     monkeypatch.setattr(questionary, "confirm", lambda *a, **k: DummySelect(False))
 
-    key = cli.setup_api_key(model)
+    key = cli.setup_api_key(dummy_model)
     assert key == "existing_key"
 
 
@@ -154,19 +167,25 @@ def test_apikeycli_replace_key(monkeypatch):
     dummy_env.write_key("API_KEY_TESTPROVIDER", "old_key")
     cli.env_file = cast(EnvFile, dummy_env)
 
+    dummy_model = make_dummy_model()
+
     monkeypatch.setattr(questionary, "confirm", lambda *a, **k: DummySelect(True))
     monkeypatch.setattr(questionary, "text", lambda *a, **k: DummySelect("new_key"))
 
-    key = cli.setup_api_key(SupportedModel.get_free_models()[0])
+    key = cli.setup_api_key(dummy_model)
     assert key == "new_key"
 
 
 def test_apikeycli_get_new_key(monkeypatch):
     cli = ApiKeyCLI()
-    dummy_env = DummyEnvFile()
-    cli.env_file = cast(EnvFile, dummy_env)
+    dummy_env = cast(EnvFile, DummyEnvFile())
+    cli.env_file = dummy_env  
 
-    monkeypatch.setattr(questionary, "text", lambda *a, **k: DummySelect("some_api_key"))
+    dummy_model = make_dummy_model()
 
-    key = cli.setup_api_key(SupportedModel.get_free_models()[0])
+    monkeypatch.setattr(questionary, "text", lambda *a, **k: DummyPrompt("some_api_key"))
+    monkeypatch.setattr(questionary, "confirm", lambda *a, **k: DummySelect(True))
+
+    key = cli.setup_api_key(dummy_model)
+
     assert key == "some_api_key"

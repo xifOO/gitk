@@ -1,6 +1,6 @@
 import pytest
 
-from core.models import Config, ModelConfig, SupportedModel
+from core.models import Config, ModelConfig
 
 
 def test_modelconfig_build_model_config_valid():
@@ -11,7 +11,7 @@ def test_modelconfig_build_model_config_valid():
             "api_base": "https://api.test.com",
             "model_id": "test/model-id",
             "is_free": False,
-            "max_tokens": 100,
+            "context_length": 1000,
             "temperature": 0.7,
             "description": "test description"
         }
@@ -24,7 +24,7 @@ def test_modelconfig_build_model_config_valid():
     assert config.api_base == "https://api.test.com"
     assert config.model_id == "test/model-id"
     assert not config.is_free
-    assert config.max_tokens == 100
+    assert config.context_length == 1000
     assert config.temperature == 0.7
     assert config.description == "test description"
 
@@ -34,31 +34,39 @@ def test_modelconfig_build_model_config_missing():
         ModelConfig.build_model_config({})
 
 
-def test_supportedmodel_get_free_models():
-    free_models = SupportedModel.get_free_models()
-    assert all(model.value.is_free for model in free_models)
-
-
-def test_supportedmodel_get_paid_models():
-    paid_models = SupportedModel.get_paid_models()
-    assert all(not model.value.is_free for model in paid_models)
-
-
 def test_config_build_config(tmp_path):
-    selected_model = SupportedModel.QWEN_MODEL
+    selected_model = ModelConfig(
+        name="TestModel",
+        provider="testprovider",
+        api_base="https://api.test.com",
+        model_id="test/model-id",
+        is_free=True,
+        context_length=2048,
+        temperature=0.4,
+        description="desc"
+    )
     path = tmp_path / "template.txt"
     path.write_text("some content")
 
     config = Config.build_config(selected_model, path)
 
-    assert config.model == selected_model.value.name
-    assert config.provider == selected_model.value.provider
-    assert config.model_config_data == selected_model.value
-    assert str(path) in config.commit_template_path
+    assert config.model == selected_model.name
+    assert config.provider == selected_model.provider
+    assert config.model_config_data == selected_model
+    assert str(path) == config.commit_template_path
 
 
 def test_config_save_and_load(tmp_path):
-    selected_model = SupportedModel.QWEN_MODEL
+    selected_model = ModelConfig(
+        name="TestModel",
+        provider="testprovider",
+        api_base="https://api.test.com",
+        model_id="test/model-id",
+        is_free=True,
+        context_length=2048,
+        temperature=0.4,
+        description="desc"
+    )
     path = tmp_path / "template.txt"
     path.write_text("some content")
 

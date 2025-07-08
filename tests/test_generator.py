@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from core.generator import CommitGenerator
+import core.generator as generator
 from core.models import Config, ModelConfig
 
 
@@ -10,7 +10,8 @@ from core.models import Config, ModelConfig
 def dummy_args():
     return MagicMock(detailed=False, instruction=None)
 
-@patch("core.generator.CommitGenerator._read_diff_from_stdin", return_value="diff --git a/file.py b/file.py\n...")
+
+@patch("core.generator.read_diff_from_stdin", return_value="diff --git a/file.py b/file.py\n...")
 @patch("core.generator.TemplateDirectory")
 @patch("core.generator.ModelFactory.create_adapter")
 def test_generate_commit_message_success(mock_adapter_factory, mock_template_dir, mock_read_diff, dummy_args):
@@ -24,7 +25,10 @@ def test_generate_commit_message_success(mock_adapter_factory, mock_template_dir
             provider="openai",
             api_base="https://api.example.com",
             model_id="test-id",
-            is_free=False
+            is_free=False,
+            context_length=2048,
+            temperature=0.4,
+            description=""
         ),
         commit_template_path="./templates/template.tpl"
     )
@@ -37,7 +41,6 @@ def test_generate_commit_message_success(mock_adapter_factory, mock_template_dir
     adapter_mock.generate_commit_message.return_value = "Generated commit message"
     mock_adapter_factory.return_value = adapter_mock
 
-    gen = CommitGenerator(mock_config)
-    result = gen.generate_commit_message(dummy_args)
+    result = generator.generate_commit_message(dummy_args, mock_config)
 
     assert result == "Generated commit message"
