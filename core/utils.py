@@ -2,6 +2,8 @@ import re
 
 import questionary
 
+from core.models import ModelConfig
+
 
 def clean_diff(diff: str) -> str:
     MAX_DIFF_LENGTH = 3000
@@ -28,3 +30,12 @@ def clean_message(message: str) -> str:
 
 def qprint(content: str) -> None:
     questionary.print(content, style="bold")
+
+
+def is_chat_model(model: ModelConfig) -> bool:
+    name = model.name.lower()
+
+    include = ["chat", "gpt", "claude", "mistral", "llama", "gemini", "command", "deepseek", "mixtral"]
+    exclude = ["embed", "embedding", "rerank", "search", "tts", "whisper", "instruct", "vision", "image", "speech"]
+
+    return any(x in name for x in include) and not any(x in name for x in exclude)
