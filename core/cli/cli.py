@@ -1,14 +1,15 @@
+import os
 import re
 from pathlib import Path
 from typing import List, Union
 
 import questionary
 
-from core.config.config import EnvFile
+from core.config.files import CacheFile, EnvFile
 from core.constants import PROVIDER_INSTRUCTIONS
-from core.models import SupportedModel
+from core.models import ModelConfig, OpenRouterRawModel, Provider
 from core.templates import Template, TemplateDirectory
-from core.utils import qprint
+from core.utils import is_chat_model, qprint
 
 
 class TemplatesCLI:
@@ -96,29 +97,51 @@ class TemplatesCLI:
 
 class ModelsCLI:
 
-    def select_model(self) -> SupportedModel:
-        qprint("\n Select a model for commit generation:")
-        
+    def select_model(self) -> ModelConfig:
+        qprint("\nSelect a model for commit generation:")
+
         choices = self._build_model_choices()
-        
+
         return questionary.select(
             "Select model",
             choices=choices,
             use_indicator=True,
             use_shortcuts=True,
         ).ask()
-    
+
     def _build_model_choices(self) -> List[Union[questionary.Separator, questionary.Choice]]:
+        provider = Provider[OpenRouterRawModel](
+            name="openrouter",
+            api_base="https://openrouter.ai/api/v1",
+            api_key=os.getenv("GITK_OPENROUTER_API_KEY", ""),
+            raw_model_cls=OpenRouterRawModel,
+            cache_file=CacheFile("openrouter")
+        )
+
+        top_models = provider.get_top_models(filter_fn=is_chat_model)
+        free_models = top_models['free']
+        paid_models = top_models['paid']
+
+        def format_description(desc: str, length: int = 60) -> str:
+            if len(desc) > length:
+                return desc[:length - 3] + "..."
+            return desc
+
+        def format_model(model: ModelConfig) -> str:
+            free_flag = "🆓" if model.is_free else "💰"
+            context_length = f"Context length: {model.context_length}"
+            desc = format_description(model.description)
+            return (
+                f"{model.name:<25} | {desc:<60} | {free_flag} | {context_length:<15}"
+            )
+
         choices: List[Union[questionary.Separator, questionary.Choice]] = []
-        
-        free_models = SupportedModel.get_free_models()
-        paid_models = SupportedModel.get_paid_models()
 
         if free_models:
             choices.append(questionary.Separator("=== Free models ==="))
             choices.extend([
                 questionary.Choice(
-                    title=f"{model.value.name} | {model.value.description}", 
+                    title=format_model(model),
                     value=model
                 ) for model in free_models
             ])
@@ -127,7 +150,7 @@ class ModelsCLI:
             choices.append(questionary.Separator("=== Paid models ==="))
             choices.extend([
                 questionary.Choice(
-                    title=f"{model.value.name} | {model.value.description}", 
+                    title=format_model(model),
                     value=model
                 ) for model in paid_models
             ])
@@ -139,10 +162,10 @@ class ApiKeyCLI:
     def __init__(self) -> None:
         self.env_file = EnvFile()
     
-    def setup_api_key(self, model: SupportedModel) -> str:
-        provider = model.value.provider
+    def setup_api_key(self, model: ModelConfig) -> str:
+        provider = model.provider
         
-        self._show_provider_instructions(provider, model.value.name)
+        self._show_provider_instructions(provider, model.name)
         
         env_var = self.env_file.get_env_var_name(provider)
         
