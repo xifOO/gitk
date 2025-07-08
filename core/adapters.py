@@ -65,7 +65,6 @@ class OpenRouterAdapter(ModelAdapter):
             "messages": [
                 {"role": "user", "content": self._build_prompt(diff, detailed, commit_template, instruction)}
             ],
-            "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature
         }
 
