@@ -6,7 +6,7 @@ from core.cli.args_parser import parse_arguments
 from core.cli.cli import ApiKeyCLI, ModelsCLI, TemplatesCLI
 from core.config.config import GitkConfig
 from core.models import Config
-from core.templates import TemplateDirectory
+from core.templates import Template
 from core.utils import clean_diff, clean_message, qprint
 
 
@@ -24,9 +24,8 @@ def generate_commit_message(args: argparse.Namespace, config: GitkConfig) -> str
     if not template_path:
         raise ValueError("Commit template path not found in the config")
 
-    template = TemplateDirectory().load_template_from_file(template_path)
-    template_content = template.load_content()
-
+    template = Template.from_file(template_path)
+    template_content = template.get_content()
 
     adapter = ModelFactory.create_adapter(model_config)
 
