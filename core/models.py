@@ -16,9 +16,10 @@ from typing import (
 
 import requests
 import yaml
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ValidationError, field_validator
 
 from core.config.files import CacheFile
+from core.exceptions import APIError, ModelConfigError
 
 
 class ModelConfig(BaseModel):
@@ -39,14 +40,16 @@ class ModelConfig(BaseModel):
 
     @classmethod
     def build_model_config(cls, config_data: Dict[str, Any]) -> Self:
-        model_json = config_data.get("model_config_data", {})
-        
-        if not model_json:
-            raise ValueError("Model configuration is missing")
+        try:
+            model_json = config_data.get("model_config_data", {})
+            
+            if not model_json:
+                raise ValueError("Model configuration is missing")
 
-        return cls(
-            **model_json
-        )    
+            return cls(**model_json)    
+        
+        except ValidationError as e:
+            raise ModelConfigError("Invalid model configuration", cause=e) from e
     
     class PydanticConfig:
         validate_assignment = True
@@ -67,28 +70,48 @@ class Config(BaseModel):
 
     @classmethod
     def build_config(cls, selected_model: ModelConfig, template_path: Path) -> Self:
-        return cls(
-            model=selected_model.name,
-            provider=selected_model.provider,
-            model_config_data=selected_model, 
-            commit_template_path=str(template_path)
-        )
+        try:
+            return cls(
+                model=selected_model.name,
+                provider=selected_model.provider,
+                model_config_data=selected_model, 
+                commit_template_path=str(template_path)
+            )
+        except ValidationError as e:
+            raise ModelConfigError("Invalid config data", cause=e) from e
     
     @classmethod
     def from_yaml(cls, file_path: Path) -> Self:
-        with open(file_path, "r", encoding="utf-8") as f:
-            raw_data = yaml.safe_load(f)
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                raw_data = yaml.safe_load(f)
+            
+            if not raw_data:
+                raise ModelConfigError("Config file is empty or invalid")
 
-        return cls(
-            model=raw_data["model"],
-            provider=raw_data["provider"],
-            model_config_data=ModelConfig(**raw_data["model_config_data"]),
-            commit_template_path=raw_data["commit_template_path"]
-        )
+            return cls(
+                model=raw_data["model"],
+                provider=raw_data["provider"],
+                model_config_data=ModelConfig(**raw_data["model_config_data"]),
+                commit_template_path=raw_data["commit_template_path"]
+            )
+        except FileNotFoundError:
+            raise
+        except yaml.YAMLError as e:
+            raise ModelConfigError("Invalid YAML format", cause=e) from e
+        except ValidationError as e:
+            raise ModelConfigError("Invalid config structure", cause=e) from e
 
     def save_to_file(self, file_path: Path) -> None:
-        with open(file_path, 'w', encoding="utf-8") as f:
-            yaml.safe_dump(self.model_dump(), f, sort_keys=False, allow_unicode=True)
+        try:
+            with open(file_path, 'w', encoding="utf-8") as f:
+                yaml.safe_dump(self.model_dump(), f, sort_keys=False, allow_unicode=True)
+        except PermissionError as e:
+            raise ModelConfigError(f"Permission denied writing to {file_path}") from e
+        except OSError as e:
+            raise ModelConfigError(f"OS error writing to {file_path}", cause=e) from e
+        except Exception as e:
+            raise ModelConfigError(f"Failed to save config to {file_path}", cause=e) from e
     
     class PydanticConfig:
         validate_assignment = True
@@ -128,19 +151,39 @@ class Provider(Generic[T]):
                 yield model
 
     def _fetch_models_from_api(self) -> Generator[ModelConfig, None, None]:
-        response = requests.get(
-            f"{self.api_base}/models",
-            headers= {
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json"
-            },
-            timeout=30
-        )
+        if not self.api_key:
+             raise APIError("API key is required")
         
-        if response.status_code != 200:
-             raise Exception(f"Failed to fetch models: {response.text}")
+        try:
+            response = requests.get(
+                f"{self.api_base}/models",
+                headers= {
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                },
+                timeout=30
+            )
 
-        models_data = response.json().get("data", [])
+            if response.status_code == 401:
+                raise APIError("Invalid API key")
+
+            response.raise_for_status()
+
+            try:
+                response_data = response.json()
+            except ValueError as e:
+                raise APIError("Invalid JSON response", cause=e) from e
+            
+            models_data = response_data.get("data", [])
+        
+        except requests.ConnectTimeout as e:
+            raise APIError("Connection timeout - API server is not responding") from e
+        except requests.ConnectionError as e:
+            raise APIError("Connection error - unable to reach API server") from e
+        except requests.RequestException as e:
+            raise APIError("Request failed", cause=e) from e
+        except Exception as e:
+            raise APIError("Unexpected error during API request", cause=e) from e
 
         for model_dict in models_data:
             raw = self.raw_model_cls.from_dict(model_dict)
@@ -239,13 +282,16 @@ class OpenRouterRawModel:
 
     @classmethod
     def from_dict(cls, data: Dict) -> Self:
-        return cls(
-            id=data["id"],
-            name=data.get("name", data["id"]),
-            description=data.get("description", ""),
-            context_length=data.get("context_length", 4096),
-            pricing_prompt=float(data.get("pricing", {}).get("prompt", 0.0))
-        )
+        try:
+            return cls(
+                id=data["id"],
+                name=data.get("name", data["id"]),
+                description=data.get("description", ""),
+                context_length=data.get("context_length", 4096),
+                pricing_prompt=float(data.get("pricing", {}).get("prompt", 0.0))
+            )
+        except (ValueError, TypeError, KeyError) as e:
+            raise ValueError(f"Invalid model data: {e}") from e
 
     def is_free(self) -> bool:
         return ":free" in self.id or self.pricing_prompt == 0.0
