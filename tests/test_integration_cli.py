@@ -101,9 +101,10 @@ def test_templatescli_create_custom_invalid_name(monkeypatch):
 
     monkeypatch.setattr(questionary, "select", lambda *a, **k: DummySelect("custom"))
     monkeypatch.setattr(cli, "_get_content_from_input", lambda: "content")
-    monkeypatch.setattr(questionary, "text", lambda *a, **k: DummyPrompt("invalid name!"))
+    
+    monkeypatch.setattr(questionary, "text", lambda *a, **k: DummyPrompt(None))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyboardInterrupt):
         cli.setup_interactive()
 
 
