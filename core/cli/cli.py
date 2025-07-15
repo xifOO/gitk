@@ -38,6 +38,9 @@ class TemplatesCLI:
             choices=choices
         ).ask()
 
+        if choice is None:
+            raise KeyboardInterrupt("User cancelled the operation")
+
         return handlers[choice]()
     
 
@@ -56,6 +59,9 @@ class TemplatesCLI:
             choices=choices
         ).ask()
 
+        if selected is None:
+            raise KeyboardInterrupt("User cancelled the operation")
+
         return selected
     
     def _create_custom_template(self) -> Template:
@@ -69,6 +75,9 @@ class TemplatesCLI:
             "Specify the path to the template file:",
             validate=lambda x: Path(x).exists() or "File not found"
         ).ask()
+
+        if file_path is None:
+            raise KeyboardInterrupt("User cancelled the operation")
 
         path = Path(file_path)
         return self.templates_dir.create_template(path.stem, path.read_text())
@@ -86,11 +95,12 @@ class TemplatesCLI:
     def _get_name_from_input(self) -> str:
         name = questionary.text(
             "Enter the filename to save the template (without extension):",
-            default="custom_template"
+            default="custom_template",
+            validate=lambda x: bool(re.match(r"^[\w\-\.]+$", x)) or "Invalid filename"
         ).ask()
 
-        if not re.match(r"^[\w\-\.]+$", name):
-            raise ValueError("Invalid filename")
+        if name is None:
+            raise KeyboardInterrupt("User cancelled the operation")
 
         return name
 
@@ -102,12 +112,17 @@ class ModelsCLI:
 
         choices = self._build_model_choices()
 
-        return questionary.select(
+        choice = questionary.select(
             "Select model",
             choices=choices,
             use_indicator=True,
             use_shortcuts=True,
         ).ask()
+
+        if choice is None:
+            raise KeyboardInterrupt("User cancelled the operation")
+        
+        return choice
 
     def _build_model_choices(self) -> List[Union[questionary.Separator, questionary.Choice]]:
         provider = Provider[OpenRouterRawModel](
@@ -180,13 +195,23 @@ class ApiKeyCLI:
             qprint(f"\n{model_name}: {PROVIDER_INSTRUCTIONS[provider]}\n")
     
     def _should_replace_key(self, provider: str) -> bool:
-        return questionary.confirm(
+        choice = questionary.confirm(
             f"An API key for {provider} was already found. Do you want to replace it?",
             default=False
         ).ask()
+
+        if choice is None:
+            raise KeyboardInterrupt("User cancelled the operation")
+        
+        return choice
     
     def _get_api_key_from_user(self, provider: str) -> str:
-        return questionary.text(
+        api_key = questionary.text(
             f"Enter the API key for {provider}",
             validate=lambda x: len(x.strip()) > 0 or "The API key cannot be empty"
         ).ask()
+
+        if api_key is None:
+            raise KeyboardInterrupt("User cancelled the operation")
+
+        return api_key
