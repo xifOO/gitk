@@ -12,7 +12,7 @@ def dummy_args():
 
 
 @patch("core.generator.read_diff_from_stdin", return_value="diff --git a/file.py b/file.py\n...")
-@patch("core.generator.TemplateDirectory")
+@patch("core.generator.Template")
 @patch("core.generator.ModelFactory.create_adapter")
 def test_generate_commit_message_success(mock_adapter_factory, mock_template_dir, mock_read_diff, dummy_args):
     mock_config = MagicMock()

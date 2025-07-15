@@ -11,7 +11,7 @@ def test_template_save_and_load():
         t.save()
 
         assert t.exists()
-        assert t.load_content() == "Hello, world!"
+        assert t.get_content() == "Hello, world!"
 
 def test_template_directory_create_and_get():
     with tempfile.TemporaryDirectory() as tempdir:
@@ -22,7 +22,7 @@ def test_template_directory_create_and_get():
 
         template = td.create_template("my", "test content")
         assert template.exists()
-        assert template.load_content() == "test content"
+        assert template.get_content() == "test content"
 
         loaded = td.get_template("my")
         assert loaded.exists()

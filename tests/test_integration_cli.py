@@ -70,7 +70,7 @@ def test_templatescli_default_template(monkeypatch):
         default_template = default_template()
 
     assert template.name == default_template.name
-    assert template.content == default_template.content
+    assert template.get_content() == default_template.get_content()
 
 
 def test_templatescli_select_from_existing_no_templates(monkeypatch):
@@ -93,7 +93,7 @@ def test_templatescli_create_custom(monkeypatch):
     template = cli.setup_interactive()
     assert isinstance(template, Template)
     assert template.name == "valid_name"
-    assert "line 1" in template.content
+    assert "line 1" in template.get_content()
 
 
 def test_templatescli_create_custom_invalid_name(monkeypatch):
@@ -118,7 +118,7 @@ def test_templatescli_load_from_file(monkeypatch, tmp_path):
 
     template = cli.setup_interactive()
     assert isinstance(template, Template)
-    assert "file template content" in template.content
+    assert "file template content" in template.get_content()
 
 
 def test_modelscli_select_model(monkeypatch):
