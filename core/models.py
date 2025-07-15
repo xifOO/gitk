@@ -151,9 +151,6 @@ class Provider(Generic[T]):
                 yield model
 
     def _fetch_models_from_api(self) -> Generator[ModelConfig, None, None]:
-        if not self.api_key:
-             raise APIError("API key is required")
-        
         try:
             response = requests.get(
                 f"{self.api_base}/models",
