@@ -41,8 +41,8 @@ class CacheDirectory:
             if self._cache_dir.exists() and self._cache_dir.is_file():
                 raise CacheDirectoryError(f"Cache path exists as file, not directory: {self._cache_dir}")
                 
-        except ConfigDirectoryError as e:
-            raise CacheDirectoryError("Config directory error", cause=e) from e
+        except CacheDirectoryError:
+            raise
         except Exception as e:
             raise CacheDirectoryError("Failed to initialize cache directory", cause=e) from e
     
