@@ -124,10 +124,14 @@ def test_templatescli_load_from_file(monkeypatch, tmp_path):
 def test_modelscli_select_model(monkeypatch):
     cli = ModelsCLI()
     dummy_model = make_dummy_model()
+
+    monkeypatch.setattr(cli, "_build_model_choices", lambda: [questionary.Choice(title=dummy_model.name, value=dummy_model)])
+
     monkeypatch.setattr(questionary, "select", lambda *a, **k: DummySelect(dummy_model))
 
     selected = cli.select_model()
     assert isinstance(selected, ModelConfig)
+    assert selected == dummy_model
 
 
 class DummyEnvFile:
