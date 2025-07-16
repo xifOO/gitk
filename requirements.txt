@@ -47,4 +47,5 @@ wcwidth==0.2.13
 xmod==1.8.1
 ruff==0.12.3
 mypy==1.17.0
+click==8.2.1
   
