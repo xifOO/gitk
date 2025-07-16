@@ -39,3 +39,7 @@ def is_chat_model(model: ModelConfig) -> bool:
     exclude = ["embed", "embedding", "rerank", "search", "tts", "whisper", "instruct", "vision", "image", "speech"]
 
     return any(x in name for x in include) and not any(x in name for x in exclude)
+
+
+def is_safe_filename(filename: str) -> bool:
+    return bool(re.match(r'^[\w\-.\\/]+$', filename))
