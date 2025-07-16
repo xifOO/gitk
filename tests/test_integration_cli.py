@@ -122,7 +122,7 @@ def test_templatescli_load_from_file(monkeypatch, tmp_path):
 
 
 def test_modelscli_select_model(monkeypatch):
-    cli = ModelsCLI()
+    cli = ModelsCLI("openrouter")
     dummy_model = make_dummy_model()
 
     monkeypatch.setattr(cli, "_build_model_choices", lambda: [questionary.Choice(title=dummy_model.name, value=dummy_model)])
