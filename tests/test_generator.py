@@ -11,16 +11,23 @@ def dummy_args():
     return MagicMock(detailed=False, instruction=None)
 
 
-@patch("core.generator.read_diff_from_stdin", return_value="diff --git a/file.py b/file.py\n...")
+@patch("core.generator.clean_diff", side_effect=lambda x: x)
+@patch("core.generator.clean_message", side_effect=lambda x: x)
 @patch("core.generator.Template")
 @patch("core.generator.ModelFactory.create_adapter")
-def test_generate_commit_message_success(mock_adapter_factory, mock_template_dir, mock_read_diff, dummy_args):
+def test_generate_commit_message_success(
+    mock_adapter_factory,
+    mock_template_class,
+    mock_clean_message,
+    mock_clean_diff,
+    dummy_args,
+):
     mock_config = MagicMock()
 
-    mock_config.load_config.return_value = Config(
-        model="gpt-4",
-        provider="openai",
-        model_config_data=ModelConfig(
+    config_data = {
+        "model": "gpt-4",
+        "provider": "openai",
+        "model_config_data": ModelConfig(
             name="test-model",
             provider="openai",
             api_base="https://api.example.com",
@@ -30,17 +37,34 @@ def test_generate_commit_message_success(mock_adapter_factory, mock_template_dir
             temperature=0.4,
             description=""
         ),
-        commit_template_path="./templates/template.tpl"
-    )
+        "commit_template_path": "./templates/template.tpl"
+    }
+
+    mock_config.load_config.return_value = Config(**config_data)
+    mock_config.load_model_config.return_value = config_data["model_config_data"]
 
     template_mock = MagicMock()
-    template_mock.load_content.return_value = "Commit template content"
-    mock_template_dir.return_value.load_template_from_file.return_value = template_mock
+    template_mock.get_content.return_value = "Commit template content"
+    mock_template_class.from_file.return_value = template_mock
 
     adapter_mock = MagicMock()
     adapter_mock.generate_commit_message.return_value = "Generated commit message"
     mock_adapter_factory.return_value = adapter_mock
 
-    result = generator.generate_commit_message(dummy_args, mock_config)
+    diff_input = "diff --git a/file.py b/file.py\n..."
 
+    result = generator.generate_commit_message(dummy_args, mock_config, diff_input)
+
+    mock_clean_diff.assert_called_once_with(diff_input)
+
+    mock_template_class.from_file.assert_called_once_with("./templates/template.tpl")
+
+    adapter_mock.generate_commit_message.assert_called_once_with(
+        diff=diff_input,
+        detailed=dummy_args.detailed,
+        commit_template="Commit template content",
+        instruction=dummy_args.instruction,
+    )
+
+    mock_clean_message.assert_called_once_with("Generated commit message")
     assert result == "Generated commit message"
