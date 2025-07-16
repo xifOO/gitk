@@ -1,20 +1,35 @@
 import os
+import shutil
+import subprocess
+import tempfile
+from typing import Optional, Tuple
+
 import click
 
+from core.cli.args_parser import argparse
 from core.cli.cli import ApiKeyCLI, ModelsCLI, TemplatesCLI
 from core.config.config import GitkConfig
+from core.generator import generate_commit_message
+from core.utils import is_safe_filename
+
+
+def get_git_path() -> str:
+    path = shutil.which("git")
+    if path is None:
+        raise RuntimeError("git executable not found in PATH")
+    return path
 
 
 @click.group()
-def cli():
+def cli() -> None:
     pass
 
 
 @cli.command()
-def init():
+def init() -> None:
     config = GitkConfig()
     templates_cli = TemplatesCLI()
-    models_cli = ModelsCLI()
+    models_cli = ModelsCLI("openrouter")
     api_key_cli = ApiKeyCLI()
 
     selected_model = models_cli.select_model()
@@ -33,12 +48,15 @@ def init():
 @click.option("--template", type=str, help="Inline commit template")
 @click.option("--instruction", type=str, help="Additional instruction for the model")
 @click.argument("extra_git_flags", nargs=-1, type=str)
-def commit(detailed, no_confirm, split, template_file, template, instruction, extra_git_flags):
-    import tempfile
-    import subprocess
-    from core.config.config import GitkConfig
-    from core.cli.args_parser import argparse
-
+def commit(
+    detailed: bool,
+    no_confirm: bool,
+    split: bool,
+    template_file: Optional[str],
+    template: Optional[str],
+    instruction: Optional[str],
+    extra_git_flags: Tuple[str, ...],
+) -> None:
     config = GitkConfig()
 
     args = argparse.Namespace(
@@ -49,9 +67,9 @@ def commit(detailed, no_confirm, split, template_file, template, instruction, ex
         init=False
     )
 
-    def generate_commit(diff_input, no_confirm, file_path=None):
-        from core.generator import generate_commit_message
+    git_path = get_git_path()
 
+    def generate_commit(diff_input: str, no_confirm: bool, file_path: Optional[str] = None) -> None:
         commit_msg = generate_commit_message(args, config, diff_input)
 
         if no_confirm:
@@ -69,16 +87,18 @@ def commit(detailed, no_confirm, split, template_file, template, instruction, ex
             tmp_path = tmp.name
 
         try:
-            cmd = ["git", "commit", "-F", tmp_path] + list(extra_git_flags)
+            cmd = [git_path, "commit", "-F", tmp_path] + list(extra_git_flags)
             if file_path:
+                if not is_safe_filename(file_path):
+                    raise ValueError(f"Unsafe filename detected: {file_path}")
                 cmd.append("--")
                 cmd.append(file_path)
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True) # noqa: S603
         finally:
             os.remove(tmp_path)
 
     if split:
-        result = subprocess.run(["git", "diff", "--cached", "--name-only"], capture_output=True, text=True)
+        result = subprocess.run([git_path, "diff", "--cached", "--name-only"], capture_output=True, text=True) # noqa: S603
         staged_files = result.stdout.strip().splitlines()
 
         if not staged_files:
@@ -86,15 +106,18 @@ def commit(detailed, no_confirm, split, template_file, template, instruction, ex
             return
 
         for file in staged_files:
-            result = subprocess.run(["git", "diff", "--cached", "--", file], capture_output=True, text=True)
+            if not is_safe_filename(file):
+                click.echo(f"Unsafe filename skipped: {file}")
+                continue
+            result = subprocess.run([git_path, "diff", "--cached", "--", file], capture_output=True, text=True) # noqa: S603
             diff = result.stdout.strip()
             if not diff:
-                click.echo(f"⚠️ Diff is empty for file: {file}")
+                click.echo(f"Diff is empty for file: {file}")
                 continue
             click.echo(f"\n--- Generating commit message for file: {file} ---")
             generate_commit(diff, no_confirm, file)
     else:
-        result = subprocess.run(["git", "diff", "--cached"], capture_output=True, text=True)
+        result = subprocess.run([git_path, "diff", "--cached"], capture_output=True, text=True) # noqa: S603
         full_diff = result.stdout.strip()
 
         if not full_diff:
@@ -104,15 +127,14 @@ def commit(detailed, no_confirm, split, template_file, template, instruction, ex
         generate_commit(full_diff, no_confirm)
 
 
-
 @cli.group()
-def update():
+def update() -> None:
     pass
 
 
 @update.command("models")
-def update_models():
-    models_cli = ModelsCLI()
+def update_models() -> None:
+    models_cli = ModelsCLI("openrouter")
     models_cli.refresh_models_list()
     click.secho("Models list updated.", fg="green")
 
