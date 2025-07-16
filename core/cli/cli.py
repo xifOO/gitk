@@ -123,6 +123,9 @@ class ModelsCLI:
             raise KeyboardInterrupt("User cancelled the operation")
         
         return choice
+    
+    def refresh_models_list(self) -> None:
+        pass
 
     def _build_model_choices(self) -> List[Union[questionary.Separator, questionary.Choice]]:
         provider = Provider[OpenRouterRawModel](
@@ -171,6 +174,7 @@ class ModelsCLI:
             ])
 
         return choices
+    
 
 
 class ApiKeyCLI:
