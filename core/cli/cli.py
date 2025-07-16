@@ -107,6 +107,16 @@ class TemplatesCLI:
 
 class ModelsCLI:
 
+    def __init__(self, provider_name: str) -> None:
+        self.cache_file = CacheFile(provider_name)
+        self.provider = Provider[OpenRouterRawModel](
+            name=provider_name,
+            api_base="https://openrouter.ai/api/v1",
+            api_key=os.getenv("GITK_OPENROUTER_API_KEY", ""),
+            raw_model_cls=OpenRouterRawModel,
+            cache_file=self.cache_file
+        )
+
     def select_model(self) -> ModelConfig:
         qprint("\nSelect a model for commit generation:")
 
@@ -125,18 +135,11 @@ class ModelsCLI:
         return choice
     
     def refresh_models_list(self) -> None:
-        pass
+        self.cache_file.delete_cache()
+        self._build_model_choices()
 
     def _build_model_choices(self) -> List[Union[questionary.Separator, questionary.Choice]]:
-        provider = Provider[OpenRouterRawModel](
-            name="openrouter",
-            api_base="https://openrouter.ai/api/v1",
-            api_key=os.getenv("GITK_OPENROUTER_API_KEY", ""),
-            raw_model_cls=OpenRouterRawModel,
-            cache_file=CacheFile("openrouter")
-        )
-
-        top_models = provider.get_top_models(filter_fn=is_chat_model)
+        top_models = self.provider.get_top_models(filter_fn=is_chat_model)
         free_models = top_models['free']
         paid_models = top_models['paid']
 
