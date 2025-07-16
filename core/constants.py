@@ -1,5 +1,4 @@
 _DEFAULT_COMMIT_TEMPLATE: str = """
-
 Requirements:
     - Use format: type: brief description
     - Types: feat, fix, docs, style, refactor, test, chore
