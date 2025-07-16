@@ -27,7 +27,6 @@ class CacheFile:
         except json.JSONDecodeError as e:
             raise CacheFileError("JSON encoding error", cause=e) from e
             
-    
     def load_models(self) -> List["ModelConfig"]:
         try:
             if not self.cache_file.exists():
@@ -48,6 +47,17 @@ class CacheFile:
             raise CacheFileError(f"Permission denied reading cache file: {self.cache_file}") from e
         except OSError as e:
             raise CacheFileError("OS error reading cache file", cause=e) from e
+    
+
+    def delete_cache(self) -> None:
+        try:
+            if self.cache_file.exists():
+                self.cache_file.unlink()
+                
+        except PermissionError as e:
+            raise CacheFileError(f"Permission denied delete cache file: {self.cache_file}") from e
+        except OSError as e:
+            raise CacheFileError("OS error delete cache file", cause=e) from e
 
 
 class EnvFile:
