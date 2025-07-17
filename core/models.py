@@ -19,6 +19,16 @@ import yaml
 from pydantic import BaseModel, ValidationError, field_validator
 
 from core.config.files import CacheFile
+from core.constants import (
+    CONTEXT_SCORE_HIGH,
+    CONTEXT_SCORE_LARGE,
+    CONTEXT_SCORE_LOW,
+    CONTEXT_SCORE_MEDIUM,
+    LOW_QUALITY_INDICATOR_PENALTY,
+    LOW_QUALITY_INDICATORS,
+    SIZE_INDICATORS,
+    TOP_TIER_MODELS,
+)
 from core.exceptions import APIError, ModelConfigError
 
 
@@ -209,62 +219,33 @@ class Provider(Generic[T]):
 
         if model.context_length:
             if model.context_length >= 1000000: 
-                score += 20
+                score += CONTEXT_SCORE_LARGE
             elif model.context_length >= 200000:  
-                score += 15
+                score += CONTEXT_SCORE_HIGH
             elif model.context_length >= 100000:  
-                score += 10
+                score += CONTEXT_SCORE_MEDIUM
             elif model.context_length >= 32000:  
-                score += 5
+                score += CONTEXT_SCORE_LOW
             else:
                 score += model.context_length / 10000 
     
         model_name_lower = model.name.lower()
         model_id_lower = model.model_id.lower()
-        
-        top_tier_models = {
-            'gpt-4': 25,
-            'claude': 25,
-            'gemini': 20,
-            'llama-3': 20,
-            'mixtral': 18,
-            'qwen': 15,
-            'deepseek': 15,
-            'phi-3': 12,
-            'mistral': 12,
-        }
 
-        for indicator, points in top_tier_models.items():
+        for indicator, points in TOP_TIER_MODELS.items():
             if indicator in model_name_lower or indicator in model_id_lower:
                 score += points
                 break
-        
-        size_indicators = {
-            '405b': 15,
-            '300b': 14,
-            '175b': 13,
-            '70b': 12,
-            '34b': 10,
-            '13b': 8,
-            '8b': 7,
-            '7b': 6,
-            '3b': 4,
-            '1b': 2,
-        }
 
-        for size, points in size_indicators.items():
+        for size, points in SIZE_INDICATORS.items():
             if size in model_name_lower or size in model_id_lower:
                 score += points
                 break
 
-        low_quality_indicators = ['test', 'experimental', 'preview', 'alpha', 'beta', 'dev']
-
-        for indicator in low_quality_indicators:
+        for indicator in LOW_QUALITY_INDICATORS:
             if indicator in model_name_lower or indicator in model_id_lower:
-                score -= 5
-        
-        if '2024' in model.description or '2025' in model.description:
-            score += 5
+                score -= LOW_QUALITY_INDICATOR_PENALTY
+                break
         
         return score
 

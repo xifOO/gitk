@@ -179,7 +179,6 @@ class ModelsCLI:
         return choices
     
 
-
 class ApiKeyCLI:
     def __init__(self) -> None:
         self.env_file = EnvFile()
