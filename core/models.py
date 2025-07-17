@@ -197,22 +197,17 @@ class Provider(Generic[T]):
             raw = self.raw_model_cls.from_dict(model_dict)
             yield raw.to_model_config()
     
-    def get_top_models(self, filter_fn: Optional[Callable[[ModelConfig], bool]] = None, free_count: int = 5, paid_count: int = 5) -> Dict[str, List[ModelConfig]]:
+    def get_top_models(self, filter_fn: Optional[Callable[[ModelConfig], bool]] = None, free_count: int = 8) -> Dict[str, List[ModelConfig]]:
         free_models = []
-        paid_models = []
 
         for model_config in self.fetch_models(filter_fn):
             if model_config.is_free:
                 free_models.append(model_config)
-            else:
-                paid_models.append(model_config)
         
         free_models.sort(key=self._calculate_model_score, reverse=True)
-        paid_models.sort(key=self._calculate_model_score, reverse=True)
 
         return {
             'free': free_models[:free_count],
-            'paid': paid_models[:paid_count]
         }
     
     def _calculate_model_score(self, model: ModelConfig) -> float:

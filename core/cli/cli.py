@@ -141,7 +141,6 @@ class ModelsCLI:
     def _build_model_choices(self) -> List[Union[questionary.Separator, questionary.Choice]]:
         top_models = self.provider.get_top_models(filter_fn=is_chat_model)
         free_models = top_models['free']
-        paid_models = top_models['paid']
 
         def format_description(desc: str, length: int = 60) -> str:
             if len(desc) > length:
@@ -149,7 +148,7 @@ class ModelsCLI:
             return desc
 
         def format_model(model: ModelConfig) -> str:
-            free_flag = "🆓" if model.is_free else "💰"
+            free_flag = "🆓" 
             context_length = f"Context length: {model.context_length}"
             desc = format_description(model.description)
             return (
@@ -165,15 +164,6 @@ class ModelsCLI:
                     title=format_model(model),
                     value=model
                 ) for model in free_models
-            ])
-
-        if paid_models:
-            choices.append(questionary.Separator("=== Paid models ==="))
-            choices.extend([
-                questionary.Choice(
-                    title=format_model(model),
-                    value=model
-                ) for model in paid_models
             ])
 
         return choices
