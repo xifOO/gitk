@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import (
@@ -272,7 +273,7 @@ class OpenRouterRawModel:
             raise ValueError(f"Invalid model data: {e}") from e
 
     def is_free(self) -> bool:
-        return ":free" in self.id or self.pricing_prompt == 0.0
+        return re.search(r"\bfree\b", self.id.lower()) is not None
     
     def to_model_config(self) -> ModelConfig:
         return ModelConfig(
