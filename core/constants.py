@@ -2,6 +2,7 @@ _DEFAULT_COMMIT_TEMPLATE: str = """ Requirements:
     - Use format: type: brief description
     - Types: feat, fix, docs, style, refactor, test, chore
     - Commit message must start with lowercase letter!
+    - First line (title) must be 50 characters or less
 
     Examples:
     feat: add login validation
@@ -17,7 +18,9 @@ DETAILED_INSTRUCTIONS: str = """ Write a git commit message with title and detai
 
     - introduce new login form component
     - connect to auth service
-    - handle basic validation \n
+    - handle basic validation
+
+    Note: The first line (commit title) should be no more than 50 characters. If it exceeds 50, Git may wrap it into the body.
 """
 
 SINGLE_INSTRUCTIONS: str = "Write ONLY a single line commit message for this git diff.\n\n"
