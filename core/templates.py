@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 from core.config.paths import ConfigDirectory
+from core.constants import _DEFAULT_COMMIT_TEMPLATE
 from core.exceptions import TemplateError, TemplateLoadError, TemplateSaveError
 
 
@@ -103,7 +104,10 @@ class TemplateDirectory:
             raise TemplateSaveError(f"Failed to create template '{name}'", cause=e) from e
 
     def default_template(self) -> Template:
-        return self.get_template("default_template")
+        template = self.get_template("default_template")
+        if template.exists():
+            return template
+        return self.create_template(name="default_template", content=_DEFAULT_COMMIT_TEMPLATE)
     
 
 
