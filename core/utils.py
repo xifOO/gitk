@@ -36,7 +36,7 @@ def is_chat_model(model: ModelConfig) -> bool:
     name = model.name.lower()
 
     include = ["chat", "gpt", "claude", "mistral", "llama", "gemini", "command", "deepseek", "mixtral"]
-    exclude = ["embed", "embedding", "rerank", "search", "tts", "whisper", "instruct", "vision", "image", "speech", "nvidia"]
+    exclude = ["embed", "embedding", "experimental", "rerank", "search", "tts", "whisper", "instruct", "vision", "image", "speech", "nvidia", "0324"]
 
     return any(x in name for x in include) and not any(x in name for x in exclude)
 
