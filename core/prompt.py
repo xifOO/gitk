@@ -1,6 +1,10 @@
 from typing import Optional
 
-from core.constants import _DEFAULT_COMMIT_TEMPLATE, DETAILED_INSTRUCTIONS, SINGLE_INSTRUCTIONS
+from core.constants import (
+    _DEFAULT_COMMIT_TEMPLATE,
+    DETAILED_INSTRUCTIONS,
+    SINGLE_INSTRUCTIONS,
+)
 
 
 def get_commit_instruction(
