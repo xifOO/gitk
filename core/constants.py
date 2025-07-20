@@ -1,10 +1,6 @@
-_DEFAULT_COMMIT_TEMPLATE: str = """
-Requirements:
+_DEFAULT_COMMIT_TEMPLATE: str = """ Requirements:
     - Use format: type: brief description
     - Types: feat, fix, docs, style, refactor, test, chore
-    - Maximum 50 characters total
-    - No explanations, no markdown, no extra text
-    - Just the commit message line
     - Commit message must start with lowercase letter!
 
     Examples:
@@ -16,6 +12,15 @@ Requirements:
 
 """
 
+DETAILED_INSTRUCTIONS: str = """ Write a git commit message with title and detailed body for this git diff. Examples:
+    feat: add user login flow
+
+    - introduce new login form component
+    - connect to auth service
+    - handle basic validation \n
+"""
+
+SINGLE_INSTRUCTIONS: str = "Write ONLY a single line commit message for this git diff.\n\n"
 
 PROVIDER_INSTRUCTIONS = {
     "openrouter": "OpenRouter → Get your key at: https://openrouter.ai",
