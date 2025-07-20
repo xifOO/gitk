@@ -1,6 +1,6 @@
 from typing import Optional
 
-from core.constants import _DEFAULT_COMMIT_TEMPLATE
+from core.constants import _DEFAULT_COMMIT_TEMPLATE, DETAILED_INSTRUCTIONS, SINGLE_INSTRUCTIONS
 
 
 def get_commit_instruction(
@@ -15,9 +15,9 @@ def get_commit_instruction(
     _commit_template: str = commit_template or _DEFAULT_COMMIT_TEMPLATE
 
     if detailed:
-        result = "Write a git commit message with title and detailed body for this git diff.\n" + _commit_template + diff
+        result = DETAILED_INSTRUCTIONS + _commit_template + diff
     else:
-        result = "Write ONLY a single line commit message for this git diff.\n\n" + _commit_template + diff
+        result = SINGLE_INSTRUCTIONS + _commit_template + diff
     
     if instruction:
         result += f"\n\nUser instruction: {instruction}"
