@@ -9,6 +9,7 @@ import click
 from core.cli.args_parser import argparse
 from core.cli.cli import ApiKeyCLI, ModelsCLI, TemplatesCLI
 from core.config.config import GitkConfig
+from core.constants import HELP_TEXT
 from core.generator import generate_commit_message
 from core.utils import is_safe_filename
 
@@ -40,7 +41,7 @@ def init() -> None:
     click.secho("GitK initialized.", fg="green")
 
 
-@cli.command()
+@cli.command(help=HELP_TEXT)
 @click.option("--detailed", is_flag=True, help="Generate detailed commit message")
 @click.option("--yes", "no_confirm", is_flag=True, default=False, help="Do not ask for confirmation")
 @click.option("--split", is_flag=True, help="Commit each file separately")
