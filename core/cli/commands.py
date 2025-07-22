@@ -1,6 +1,4 @@
 import os
-import shutil
-import subprocess
 import tempfile
 from typing import Optional, Tuple
 
@@ -11,14 +9,8 @@ from core.cli.cli import ApiKeyCLI, ModelsCLI, TemplatesCLI
 from core.config.config import GitkConfig
 from core.constants import HELP_TEXT
 from core.generator import generate_commit_message
+from core.runner import SafeGitRunner
 from core.utils import is_safe_filename
-
-
-def get_git_path() -> str:
-    path = shutil.which("git")
-    if path is None:
-        raise RuntimeError("git executable not found in PATH")
-    return path
 
 
 @click.group()
@@ -43,9 +35,19 @@ def init() -> None:
 
 @cli.command(help=HELP_TEXT)
 @click.option("--detailed", is_flag=True, help="Generate detailed commit message")
-@click.option("--yes", "no_confirm", is_flag=True, default=False, help="Do not ask for confirmation")
+@click.option(
+    "--yes",
+    "no_confirm",
+    is_flag=True,
+    default=False,
+    help="Do not ask for confirmation",
+)
 @click.option("--split", is_flag=True, help="Commit each file separately")
-@click.option("--template-file", type=click.Path(exists=True), help="Path to custom commit template")
+@click.option(
+    "--template-file",
+    type=click.Path(exists=True),
+    help="Path to custom commit template",
+)
 @click.option("--template", type=str, help="Inline commit template")
 @click.option("--instruction", type=str, help="Additional instruction for the model")
 @click.argument("extra_git_flags", nargs=-1, type=str)
@@ -65,12 +67,14 @@ def commit(
         instruction=instruction,
         template=template,
         template_file=template_file,
-        init=False
+        init=False,
     )
 
-    git_path = get_git_path()
+    git_runner = SafeGitRunner()
 
-    def generate_commit(diff_input: str, no_confirm: bool, file_path: Optional[str] = None) -> None:
+    def generate_commit(
+        diff_input: str, no_confirm: bool, file_path: Optional[str] = None
+    ) -> None:
         commit_msg = generate_commit_message(args, config, diff_input)
 
         if no_confirm:
@@ -88,18 +92,21 @@ def commit(
             tmp_path = tmp.name
 
         try:
-            cmd = [git_path, "commit", "-F", tmp_path] + list(extra_git_flags)
+            cmd = ["commit", "-F", tmp_path] + list(extra_git_flags)
             if file_path:
                 if not is_safe_filename(file_path):
                     raise ValueError(f"Unsafe filename detected: {file_path}")
-                cmd.append("--")
-                cmd.append(file_path)
-            subprocess.run(cmd, check=True) # noqa: S603
+                cmd.extend(["--", file_path])
+            git_runner.run(cmd, check=True)
         finally:
             os.remove(tmp_path)
 
     if split:
-        result = subprocess.run([git_path, "diff", "--cached", "--name-only"], capture_output=True, text=True) # noqa: S603
+        result = git_runner.run(
+            ["diff", "--cached", "--name-only"],
+            capture_output=True,
+            text=True,
+        )
         staged_files = result.stdout.strip().splitlines()
 
         if not staged_files:
@@ -110,7 +117,12 @@ def commit(
             if not is_safe_filename(file):
                 click.echo(f"Unsafe filename skipped: {file}")
                 continue
-            result = subprocess.run([git_path, "diff", "--cached", "--", file], capture_output=True, text=True) # noqa: S603
+
+            result = git_runner.run(
+                ["diff", "--cached", "--", file],
+                capture_output=True,
+                text=True,
+            )
             diff = result.stdout.strip()
             if not diff:
                 click.echo(f"Diff is empty for file: {file}")
@@ -118,7 +130,11 @@ def commit(
             click.echo(f"\n--- Generating commit message for file: {file} ---")
             generate_commit(diff, no_confirm, file)
     else:
-        result = subprocess.run([git_path, "diff", "--cached"], capture_output=True, text=True) # noqa: S603
+        result = git_runner.run(
+            ["diff", "--cached"],
+            capture_output=True,
+            text=True,
+        )
         full_diff = result.stdout.strip()
 
         if not full_diff:
