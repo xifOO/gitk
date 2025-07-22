@@ -29,7 +29,9 @@ def test_save_models_success():
     with patch("builtins.open", m_open), patch("json.dump") as mock_json_dump:
         cache = CacheFile("testprovider")
         cache.save_models(dummy_models)
-        mock_json_dump.assert_called_once_with(m_dump, m_open(), ensure_ascii=False, indent=2)
+        mock_json_dump.assert_called_once_with(
+            m_dump, m_open(), ensure_ascii=False, indent=2
+        )
 
 
 def test_save_models_permission_error():
@@ -57,7 +59,10 @@ def test_save_models_os_error():
 def test_save_models_json_decode_error():
     dummy_models = [make_dummy_model()]
 
-    with patch("builtins.open", mock_open()), patch("json.dump", side_effect=json.JSONDecodeError("msg", "doc", 0)):
+    with (
+        patch("builtins.open", mock_open()),
+        patch("json.dump", side_effect=json.JSONDecodeError("msg", "doc", 0)),
+    ):
         cache = CacheFile("testprovider")
         with pytest.raises(CacheFileError, match="JSON encoding error"):
             cache.save_models(dummy_models)
