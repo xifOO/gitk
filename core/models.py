@@ -35,7 +35,7 @@ from core.exceptions import APIError, ModelConfigError
 
 class ModelConfig(BaseModel):
     name: str
-    provider: str 
+    provider: str
     api_base: str
     model_id: str
     is_free: bool
@@ -43,7 +43,7 @@ class ModelConfig(BaseModel):
     temperature: float = 0.4
     description: str = ""
 
-    @field_validator('name', 'provider', 'api_base', 'model_id')
+    @field_validator("name", "provider", "api_base", "model_id")
     def strip_strings(cls, v: str) -> str:
         if isinstance(v, str):
             return v.strip()
@@ -53,26 +53,26 @@ class ModelConfig(BaseModel):
     def build_model_config(cls, config_data: Dict[str, Any]) -> Self:
         try:
             model_json = config_data.get("model_config_data", {})
-            
+
             if not model_json:
                 raise ValueError("Model configuration is missing")
 
-            return cls(**model_json)    
-        
+            return cls(**model_json)
+
         except ValidationError as e:
             raise ModelConfigError("Invalid model configuration", cause=e) from e
-    
+
     class PydanticConfig:
         validate_assignment = True
 
-    
+
 class Config(BaseModel):
     model: str
     provider: str
     model_config_data: ModelConfig
     commit_template_path: str
 
-    @field_validator('model', 'provider', 'commit_template_path')
+    @field_validator("model", "provider", "commit_template_path")
     @classmethod
     def strip_strings(cls, v: str) -> str:
         if isinstance(v, str):
@@ -85,18 +85,18 @@ class Config(BaseModel):
             return cls(
                 model=selected_model.name,
                 provider=selected_model.provider,
-                model_config_data=selected_model, 
-                commit_template_path=str(template_path)
+                model_config_data=selected_model,
+                commit_template_path=str(template_path),
             )
         except ValidationError as e:
             raise ModelConfigError("Invalid config data", cause=e) from e
-    
+
     @classmethod
     def from_yaml(cls, file_path: Path) -> Self:
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 raw_data = yaml.safe_load(f)
-            
+
             if not raw_data:
                 raise ModelConfigError("Config file is empty or invalid")
 
@@ -104,7 +104,7 @@ class Config(BaseModel):
                 model=raw_data["model"],
                 provider=raw_data["provider"],
                 model_config_data=ModelConfig(**raw_data["model_config_data"]),
-                commit_template_path=raw_data["commit_template_path"]
+                commit_template_path=raw_data["commit_template_path"],
             )
         except FileNotFoundError:
             raise
@@ -115,23 +115,27 @@ class Config(BaseModel):
 
     def save_to_file(self, file_path: Path) -> None:
         try:
-            with open(file_path, 'w', encoding="utf-8") as f:
-                yaml.safe_dump(self.model_dump(), f, sort_keys=False, allow_unicode=True)
+            with open(file_path, "w", encoding="utf-8") as f:
+                yaml.safe_dump(
+                    self.model_dump(), f, sort_keys=False, allow_unicode=True
+                )
         except PermissionError as e:
             raise ModelConfigError(f"Permission denied writing to {file_path}") from e
         except OSError as e:
             raise ModelConfigError(f"OS error writing to {file_path}", cause=e) from e
         except Exception as e:
-            raise ModelConfigError(f"Failed to save config to {file_path}", cause=e) from e
-    
+            raise ModelConfigError(
+                f"Failed to save config to {file_path}", cause=e
+            ) from e
+
     class PydanticConfig:
         validate_assignment = True
 
 
-class RawModel(Protocol): 
+class RawModel(Protocol):
     @classmethod
-    def from_dict(cls, data: Dict) -> Self: ... 
-    def to_model_config(self) -> ModelConfig: ... 
+    def from_dict(cls, data: Dict) -> Self: ...
+    def to_model_config(self) -> ModelConfig: ...
 
 
 T = TypeVar("T", bound=RawModel)
@@ -146,8 +150,7 @@ class Provider(Generic[T]):
     cache_file: CacheFile
 
     def fetch_models(
-        self,
-        filter_fn: Optional[Callable[[ModelConfig], bool]] = None
+        self, filter_fn: Optional[Callable[[ModelConfig], bool]] = None
     ) -> Generator[ModelConfig, None, None]:
         cached_models = self.cache_file.load_models()
 
@@ -165,11 +168,11 @@ class Provider(Generic[T]):
         try:
             response = requests.get(
                 f"{self.api_base}/models",
-                headers= {
+                headers={
                     "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
-                timeout=30
+                timeout=30,
             )
 
             if response.status_code == 401:
@@ -181,9 +184,9 @@ class Provider(Generic[T]):
                 response_data = response.json()
             except ValueError as e:
                 raise APIError("Invalid JSON response", cause=e) from e
-            
+
             models_data = response_data.get("data", [])
-        
+
         except requests.ConnectTimeout as e:
             raise APIError("Connection timeout - API server is not responding") from e
         except requests.ConnectionError as e:
@@ -196,35 +199,39 @@ class Provider(Generic[T]):
         for model_dict in models_data:
             raw = self.raw_model_cls.from_dict(model_dict)
             yield raw.to_model_config()
-    
-    def get_top_models(self, filter_fn: Optional[Callable[[ModelConfig], bool]] = None, free_count: int = 8) -> Dict[str, List[ModelConfig]]:
+
+    def get_top_models(
+        self,
+        filter_fn: Optional[Callable[[ModelConfig], bool]] = None,
+        free_count: int = 8,
+    ) -> Dict[str, List[ModelConfig]]:
         free_models = []
 
         for model_config in self.fetch_models(filter_fn):
             if model_config.is_free:
                 free_models.append(model_config)
-        
+
         free_models.sort(key=self._calculate_model_score, reverse=True)
 
         return {
-            'free': free_models[:free_count],
+            "free": free_models[:free_count],
         }
-    
+
     def _calculate_model_score(self, model: ModelConfig) -> float:
         score = 0.0
 
         if model.context_length:
-            if model.context_length >= 1000000: 
+            if model.context_length >= 1000000:
                 score += CONTEXT_SCORE_LARGE
-            elif model.context_length >= 200000:  
+            elif model.context_length >= 200000:
                 score += CONTEXT_SCORE_HIGH
-            elif model.context_length >= 100000:  
+            elif model.context_length >= 100000:
                 score += CONTEXT_SCORE_MEDIUM
-            elif model.context_length >= 32000:  
+            elif model.context_length >= 32000:
                 score += CONTEXT_SCORE_LOW
             else:
-                score += model.context_length / 10000 
-    
+                score += model.context_length / 10000
+
         model_name_lower = model.name.lower()
         model_id_lower = model.model_id.lower()
 
@@ -242,7 +249,7 @@ class Provider(Generic[T]):
             if indicator in model_name_lower or indicator in model_id_lower:
                 score -= LOW_QUALITY_INDICATOR_PENALTY
                 break
-        
+
         return score
 
 
@@ -250,7 +257,7 @@ class Provider(Generic[T]):
 class OpenRouterRawModel:
     id: str
     name: str
-    description: str 
+    description: str
     context_length: int
     pricing_prompt: float
 
@@ -262,14 +269,14 @@ class OpenRouterRawModel:
                 name=data.get("name", data["id"]),
                 description=data.get("description", ""),
                 context_length=data.get("context_length", 4096),
-                pricing_prompt=float(data.get("pricing", {}).get("prompt", 0.0))
+                pricing_prompt=float(data.get("pricing", {}).get("prompt", 0.0)),
             )
         except (ValueError, TypeError, KeyError) as e:
             raise ValueError(f"Invalid model data: {e}") from e
 
     def is_free(self) -> bool:
         return re.search(r"\bfree\b", self.id.lower()) is not None
-    
+
     def to_model_config(self) -> ModelConfig:
         return ModelConfig(
             name=self.name,
@@ -279,5 +286,5 @@ class OpenRouterRawModel:
             is_free=self.is_free(),
             context_length=self.context_length,
             temperature=0.4,
-            description=self.description.strip()
+            description=self.description.strip(),
         )
