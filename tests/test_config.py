@@ -34,27 +34,29 @@ def test_save_config(ConfigMock, EnvFileMock):
         api_base="https://openrouter.ai/api/v1",
         api_key="dummy_api_key",
         raw_model_cls=OpenRouterRawModel,
-        cache_file=CacheFile("openrouter")
+        cache_file=CacheFile("openrouter"),
     )
-    
-    provider.fetch_models = MagicMock(return_value=[
-        OpenRouterRawModel(
-            id="free-model",
-            name="Free Model",
-            description="Free model",
-            context_length=4096,
-            pricing_prompt=0.0
-        ).to_model_config(),
-        OpenRouterRawModel(
-            id="paid-model",
-            name="Paid Model",
-            description="Paid model",
-            context_length=4096,
-            pricing_prompt=0.1
-        ).to_model_config(),
-    ])
 
-    top_model = provider.get_top_models(filter_fn=is_chat_model)['free'][0]
+    provider.fetch_models = MagicMock(
+        return_value=[
+            OpenRouterRawModel(
+                id="free-model",
+                name="Free Model",
+                description="Free model",
+                context_length=4096,
+                pricing_prompt=0.0,
+            ).to_model_config(),
+            OpenRouterRawModel(
+                id="paid-model",
+                name="Paid Model",
+                description="Paid model",
+                context_length=4096,
+                pricing_prompt=0.1,
+            ).to_model_config(),
+        ]
+    )
+
+    top_model = provider.get_top_models(filter_fn=is_chat_model)["free"][0]
 
     template_mock = MagicMock()
     template_mock.path = "template.txt"
