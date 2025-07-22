@@ -25,6 +25,50 @@ DETAILED_INSTRUCTIONS: str = """ Write a git commit message with title and detai
 
 SINGLE_INSTRUCTIONS: str = "Write ONLY a single line commit message for this git diff.\n\n"
 
+HELP_TEXT: str = """Usage: gitk commit [OPTIONS] [EXTRA_GIT_FLAGS]...
+
+Generate AI-powered commit messages based on staged changes.
+
+Options:
+  --detailed               Generate a more detailed commit message. Useful for
+                           longer or more complex diffs.
+
+  --yes                    Skip confirmation prompts and commit automatically
+                           with the generated message.
+                           (Same as: --no-confirm)
+
+  --split                  Generate and commit messages for each staged file
+                           separately. Useful for keeping commits atomic.
+
+  --template-file PATH     Path to a custom commit message template file.
+                           Template should contain placeholders like {{diff}}
+                           and {{instruction}}.
+
+  --template TEXT          Inline template string to use for the commit
+                           message. Overrides default template.
+
+  --instruction TEXT       Additional instruction or context to guide the AI
+                           model when generating commit messages.
+
+  EXTRA_GIT_FLAGS...       Any extra flags to be passed directly to `git commit`.
+                           Example: --signoff, --amend, etc.
+
+Description:
+  The `gitk commit` command generates commit messages using AI, based on
+  the staged diff. It supports both single commit mode (default) and split
+  per-file commits with `--split`.
+
+  The tool uses a configured model and template (set via `gitk init`) to
+  automatically craft commit messages that follow best practices.
+
+Examples:
+  gitk commit --detailed
+  gitk commit --split --template-file=my_template.txt
+  gitk commit --template="Change summary: {{diff}}" --yes
+  gitk commit --instruction="Write in imperative tense"
+
+"""
+
 PROVIDER_INSTRUCTIONS = {
     "openrouter": "OpenRouter → Get your key at: https://openrouter.ai",
 }

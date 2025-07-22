@@ -14,14 +14,19 @@ def generate_commit_message(args: argparse.Namespace, config: GitkConfig, diff: 
     config_data = config_model.model_dump()
 
     model_config = config.load_model_config(config_data)
+    
+    if args.template:
+        template_content = args.template
+    else:
+        template_path = args.template_file or config_data.get("commit_template_path")
 
-    template_path = config_data.get("commit_template_path")
+        if not template_path:
+            raise ValueError(
+                "No commit template provided. Specify --template, --template-file, or set it in config."
+            )
 
-    if not template_path:
-        raise ValueError("Commit template path not found in the config")
-
-    template = Template.from_file(template_path)
-    template_content = template.get_content()
+        template = Template.from_file(template_path)
+        template_content = template.get_content()
 
     adapter = ModelFactory.create_adapter(model_config)
 
