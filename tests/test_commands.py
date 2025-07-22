@@ -1,5 +1,5 @@
-from unittest.mock import ANY, MagicMock, patch
 import subprocess
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
