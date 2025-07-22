@@ -87,7 +87,11 @@ def test_templatescli_create_custom(monkeypatch):
     inputs = iter(["line 1", "line 2", ""])
 
     monkeypatch.setattr(questionary, "select", lambda *a, **k: DummySelect("custom"))
-    monkeypatch.setattr(cli, "_get_content_from_input", lambda: "\n".join([next(inputs) for _ in range(3)]))
+    monkeypatch.setattr(
+        cli,
+        "_get_content_from_input",
+        lambda: "\n".join([next(inputs) for _ in range(3)]),
+    )
     monkeypatch.setattr(cli, "_get_name_from_input", lambda: "valid_name")
 
     template = cli.setup_interactive()
@@ -101,7 +105,7 @@ def test_templatescli_create_custom_invalid_name(monkeypatch):
 
     monkeypatch.setattr(questionary, "select", lambda *a, **k: DummySelect("custom"))
     monkeypatch.setattr(cli, "_get_content_from_input", lambda: "content")
-    
+
     monkeypatch.setattr(questionary, "text", lambda *a, **k: DummyPrompt(None))
 
     with pytest.raises(KeyboardInterrupt):
@@ -125,7 +129,11 @@ def test_modelscli_select_model(monkeypatch):
     cli = ModelsCLI("openrouter")
     dummy_model = make_dummy_model()
 
-    monkeypatch.setattr(cli, "_build_model_choices", lambda: [questionary.Choice(title=dummy_model.name, value=dummy_model)])
+    monkeypatch.setattr(
+        cli,
+        "_build_model_choices",
+        lambda: [questionary.Choice(title=dummy_model.name, value=dummy_model)],
+    )
 
     monkeypatch.setattr(questionary, "select", lambda *a, **k: DummySelect(dummy_model))
 
@@ -184,11 +192,13 @@ def test_apikeycli_replace_key(monkeypatch):
 def test_apikeycli_get_new_key(monkeypatch):
     cli = ApiKeyCLI()
     dummy_env = cast(EnvFile, DummyEnvFile())
-    cli.env_file = dummy_env  
+    cli.env_file = dummy_env
 
     dummy_model = make_dummy_model()
 
-    monkeypatch.setattr(questionary, "text", lambda *a, **k: DummyPrompt("some_api_key"))
+    monkeypatch.setattr(
+        questionary, "text", lambda *a, **k: DummyPrompt("some_api_key")
+    )
     monkeypatch.setattr(questionary, "confirm", lambda *a, **k: DummySelect(True))
 
     key = cli.setup_api_key(dummy_model)
