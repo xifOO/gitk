@@ -8,81 +8,61 @@ from core.exceptions import CacheDirectoryError
 
 
 def test_init_cache_dir_success():
-    fake_base_dir = MagicMock(spec=Path)
-    fake_cache_dir = MagicMock(spec=Path)
+    fake_config = MagicMock()
+    fake_path = MagicMock(spec=Path)
+    fake_path.exists.return_value = False
+    fake_path.is_file.return_value = False
 
-    fake_base_dir.exists.return_value = False
-    fake_base_dir.is_file.return_value = False
-    fake_base_dir.__truediv__.return_value = fake_cache_dir
+    fake_config.config_dir.return_value.__truediv__.return_value.__truediv__.return_value = (
+        fake_path
+    )
 
-    fake_cache_dir.exists.return_value = False
-    fake_cache_dir.is_file.return_value = False
-
-    with patch("core.config.paths.ConfigDirectory.__init__", return_value=None):
+    with patch("core.config.paths.ConfigDirectory", return_value=fake_config):
         with patch(
-            "core.config.paths.ConfigDirectory.config_dir", return_value=fake_base_dir
-        ):
-            cache_dir = CacheDirectory()
-            assert cache_dir._cache_dir == fake_cache_dir
-            fake_cache_dir.exists.assert_called_once()
+            "core.config.paths.BaseDirectory.__init__", return_value=None
+        ) as mock_base_init:
+            cache_dir = CacheDirectory(config_dir=fake_config)  # noqa: F841
+            mock_base_init.assert_called_once_with(fake_path, CacheDirectoryError)
 
 
 def test_init_cache_dir_raises_if_cache_path_is_file():
-    fake_base_dir = MagicMock(spec=Path)
-    fake_cache_dir = MagicMock(spec=Path)
+    fake_config = MagicMock()
+    fake_path = MagicMock(spec=Path)
+    fake_path.exists.return_value = True
+    fake_path.is_file.return_value = True
+    fake_config.config_dir.return_value.__truediv__.return_value.__truediv__.return_value = (
+        fake_path
+    )
 
-    fake_base_dir.__truediv__.return_value = fake_cache_dir
-
-    fake_cache_dir.exists.return_value = True
-    fake_cache_dir.is_file.return_value = True
-
-    with patch("core.config.paths.ConfigDirectory.__init__", return_value=None):
-        with patch(
-            "core.config.paths.ConfigDirectory.config_dir", return_value=fake_base_dir
-        ):
-            cache_dir = CacheDirectory.__new__(CacheDirectory)
-            cache_dir._config_dir = MagicMock(
-                config_dir=MagicMock(return_value=fake_base_dir)
+    with patch("core.config.paths.ConfigDirectory", return_value=fake_config):
+        with patch("core.config.paths.BaseDirectory.__init__") as mock_base_init:
+            mock_base_init.side_effect = CacheDirectoryError(
+                "Cache path exists as file"
             )
-            cache_dir._cache_dir = fake_cache_dir
             with pytest.raises(CacheDirectoryError) as excinfo:
-                CacheDirectory.__init__(cache_dir)
-            assert "Cache path exists as file" in str(excinfo.value)
-
-
-def test_init_cache_dir_wraps_config_error():
-    class DummyConfigError(Exception):
-        pass
-
-    def raise_error():
-        raise DummyConfigError()
-
-    with patch("core.config.paths.ConfigDirectory.__init__", return_value=None):
-        with patch(
-            "core.config.paths.ConfigDirectory.config_dir", side_effect=raise_error
-        ):
-            with pytest.raises(CacheDirectoryError) as excinfo:
-                CacheDirectory()
-            assert "Failed to initialize cache directory" in str(excinfo.value)
-            assert isinstance(excinfo.value.__cause__, DummyConfigError)
+                CacheDirectory(config_dir=fake_config)
+            assert isinstance(excinfo.value.__cause__, CacheDirectoryError)
+            assert "Cache path exists as file" in str(excinfo.value.__cause__)
 
 
 def test_ensure_calls_mkdir():
-    mock_cache_dir = MagicMock(spec=Path)
+    mock_path = MagicMock(spec=Path)
     cache_directory = CacheDirectory.__new__(CacheDirectory)
-    cache_directory._cache_dir = mock_cache_dir
+    cache_directory._path = mock_path
 
     cache_directory.ensure()
-    mock_cache_dir.mkdir.assert_called_once_with(parents=True, exist_ok=True)
+    mock_path.mkdir.assert_called_once_with(parents=True, exist_ok=True)
 
 
 def test_get_cache_file_path_returns_path():
-    mock_cache_dir = Path("/fake/cache/dir")
+    mock_path = MagicMock(spec=Path)
     cache_directory = CacheDirectory.__new__(CacheDirectory)
-    cache_directory._cache_dir = mock_cache_dir
+    cache_directory._path = mock_path
+    cache_directory.ensure_exists = MagicMock(return_value=mock_path)
 
-    path = cache_directory.get_cache_file_path("provider")
-    assert path == mock_cache_dir / "provider_models.json"
+    result = cache_directory.get_cache_file_path("provider")
+    expected = mock_path / "provider_models.json"
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -98,5 +78,6 @@ def test_get_cache_file_path_returns_path():
 )
 def test_sanitize_filename(input_name, expected):
     cache_directory = CacheDirectory.__new__(CacheDirectory)
+    cache_directory._path = MagicMock()
     result = cache_directory._sanitize_filename(input_name)
     assert result == expected

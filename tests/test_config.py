@@ -11,9 +11,9 @@ from core.utils import is_chat_model
 
 def test_envfile_save_and_read():
     with tempfile.TemporaryDirectory() as tempdir:
+        env_path = Path(tempdir) / ".env"
         env = EnvFile()
-        env._config_dir._base = Path(tempdir)
-        env.env_file = Path(tempdir) / ".env"
+        env._file_path = env_path
 
         env.save_key("openai", "test-api-key")
 
