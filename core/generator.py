@@ -7,14 +7,16 @@ from core.templates import Template
 from core.utils import clean_diff, clean_message
 
 
-def generate_commit_message(args: argparse.Namespace, config: GitkConfig, diff: str) -> str:
+def generate_commit_message(
+    args: argparse.Namespace, config: GitkConfig, diff: str
+) -> str:
     cleaned_diff = clean_diff(diff)
 
     config_model: Config = config.load_config()
     config_data = config_model.model_dump()
 
     model_config = config.load_model_config(config_data)
-    
+
     if args.template:
         template_content = args.template
     else:
@@ -34,8 +36,7 @@ def generate_commit_message(args: argparse.Namespace, config: GitkConfig, diff: 
         diff=cleaned_diff,
         detailed=args.detailed,
         commit_template=template_content,
-        instruction=args.instruction
+        instruction=args.instruction,
     )
 
     return clean_message(commit_message)
-    

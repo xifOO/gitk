@@ -19,7 +19,9 @@ def test_init_cache_dir_success():
     fake_cache_dir.is_file.return_value = False
 
     with patch("core.config.paths.ConfigDirectory.__init__", return_value=None):
-        with patch("core.config.paths.ConfigDirectory.config_dir", return_value=fake_base_dir):
+        with patch(
+            "core.config.paths.ConfigDirectory.config_dir", return_value=fake_base_dir
+        ):
             cache_dir = CacheDirectory()
             assert cache_dir._cache_dir == fake_cache_dir
             fake_cache_dir.exists.assert_called_once()
@@ -35,9 +37,13 @@ def test_init_cache_dir_raises_if_cache_path_is_file():
     fake_cache_dir.is_file.return_value = True
 
     with patch("core.config.paths.ConfigDirectory.__init__", return_value=None):
-        with patch("core.config.paths.ConfigDirectory.config_dir", return_value=fake_base_dir):
+        with patch(
+            "core.config.paths.ConfigDirectory.config_dir", return_value=fake_base_dir
+        ):
             cache_dir = CacheDirectory.__new__(CacheDirectory)
-            cache_dir._config_dir = MagicMock(config_dir=MagicMock(return_value=fake_base_dir))
+            cache_dir._config_dir = MagicMock(
+                config_dir=MagicMock(return_value=fake_base_dir)
+            )
             cache_dir._cache_dir = fake_cache_dir
             with pytest.raises(CacheDirectoryError) as excinfo:
                 CacheDirectory.__init__(cache_dir)
@@ -52,7 +58,9 @@ def test_init_cache_dir_wraps_config_error():
         raise DummyConfigError()
 
     with patch("core.config.paths.ConfigDirectory.__init__", return_value=None):
-        with patch("core.config.paths.ConfigDirectory.config_dir", side_effect=raise_error):
+        with patch(
+            "core.config.paths.ConfigDirectory.config_dir", side_effect=raise_error
+        ):
             with pytest.raises(CacheDirectoryError) as excinfo:
                 CacheDirectory()
             assert "Failed to initialize cache directory" in str(excinfo.value)
@@ -82,11 +90,11 @@ def test_get_cache_file_path_returns_path():
     [
         ("simpleName", "simpleName"),
         ("name with spaces", "name with spaces"),
-        ("unsafe<>:\"/\\|?*chars", "unsafe_chars"),
+        ('unsafe<>:"/\\|?*chars', "unsafe_chars"),
         ("___multiple__underscores__", "multiple_underscores"),
         (" " * 10 + "name" + " " * 10, "name"),
         ("a" * 100, "a" * 85),
-    ]
+    ],
 )
 def test_sanitize_filename(input_name, expected):
     cache_directory = CacheDirectory.__new__(CacheDirectory)

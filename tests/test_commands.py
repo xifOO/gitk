@@ -1,3 +1,4 @@
+import subprocess
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
@@ -15,7 +16,9 @@ def runner():
 @patch("core.cli.commands.TemplatesCLI")
 @patch("core.cli.commands.ModelsCLI")
 @patch("core.cli.commands.ApiKeyCLI")
-def test_init_command(mock_api_key_cli, mock_models_cli, mock_templates_cli, mock_config_cls, runner):
+def test_init_command(
+    mock_api_key_cli, mock_models_cli, mock_templates_cli, mock_config_cls, runner
+):
     mock_config = MagicMock()
     mock_config_cls.return_value = mock_config
 
@@ -34,11 +37,13 @@ def test_init_command(mock_api_key_cli, mock_models_cli, mock_templates_cli, moc
     mock_models.select_model.assert_called_once()
     mock_api_key.setup_api_key.assert_called_once_with("mock-model")
     mock_templates.setup_interactive.assert_called_once()
-    mock_config.save_config.assert_called_once_with("mock-model", "mock-template", "mock-api-key")
+    mock_config.save_config.assert_called_once_with(
+        "mock-model", "mock-template", "mock-api-key"
+    )
     assert "GitK initialized." in result.output
 
 
-@patch("core.cli.commands.subprocess.run")
+@patch("core.runner.SafeGitRunner.run")
 @patch("core.cli.commands.os.remove")
 @patch("core.cli.commands.tempfile.NamedTemporaryFile")
 @patch("core.cli.commands.click.echo")
@@ -54,15 +59,19 @@ def test_commit_command_no_split_confirm(
     mock_echo,
     mock_tempfile,
     mock_remove,
-    mock_subprocess_run,
+    mock_run,
     runner,
 ):
     mock_config = MagicMock()
     mock_config_cls.return_value = mock_config
 
-    mock_namespace.return_value = MagicMock(detailed=False, instruction=None, template=None, template_file=None, init=False)
+    mock_namespace.return_value = MagicMock(
+        detailed=False, instruction=None, template=None, template_file=None, init=False
+    )
 
-    mock_subprocess_run.return_value = MagicMock(stdout="diff content", returncode=0)
+    mock_run.return_value = subprocess.CompletedProcess(
+        args=["git", "diff", "--cached"], returncode=0, stdout="diff content", stderr=""
+    )
     mock_generate_commit_message.return_value = "Commit message"
     mock_confirm.return_value = True
 
@@ -78,31 +87,44 @@ def test_commit_command_no_split_confirm(
     mock_echo.assert_any_call("Commit message")
     mock_echo.assert_any_call("----------------------")
     mock_confirm.assert_called_once()
-    mock_subprocess_run.assert_called()
+    mock_run.assert_called()
     mock_remove.assert_called_once_with(ANY)
     mock_generate_commit_message.assert_called_once()
 
 
-@patch("core.cli.commands.subprocess.run")
+@patch("core.utils.is_safe_filename", return_value=True)
+@patch("core.runner.SafeGitRunner.run")
 @patch("core.cli.commands.click.echo")
 @patch("core.cli.commands.generate_commit_message")
 def test_commit_command_split(
     mock_generate_commit_message,
     mock_echo,
-    mock_subprocess_run,
+    mock_run,
+    mock_is_safe_filename,
     runner,
 ):
-    mock_subprocess_run.side_effect = [
-        MagicMock(stdout="file1.py\nfile2.py", returncode=0),
-        MagicMock(stdout="diff content for file1", returncode=0),
-        MagicMock(stdout="diff content for file2", returncode=0),
-        MagicMock(returncode=0),
-        MagicMock(returncode=0),
-    ]
+    def run_side_effect(cmd, *args, **kwargs):
+        print(f"DEBUG: git command run: {cmd}")
+        if "--name-only" in cmd:
+            return subprocess.CompletedProcess(
+                cmd, 0, stdout="file1.py\nfile2.py", stderr=""
+            )
+        elif "--" in cmd and cmd[-1] in ["file1.py", "file2.py"]:
+            file = cmd[-1]
+            return subprocess.CompletedProcess(
+                cmd, 0, stdout=f"diff content for {file}", stderr=""
+            )
+        else:
+            return subprocess.CompletedProcess(cmd, 0)
 
+    mock_run.side_effect = run_side_effect
     mock_generate_commit_message.return_value = "Commit message for file"
 
     result = runner.invoke(cli, ["commit", "--split", "--yes"])
+
+    print(
+        f"DEBUG: generate_commit_message call count: {mock_generate_commit_message.call_count}"
+    )
 
     assert result.exit_code == 0
     mock_echo.assert_any_call("\n--- Generating commit message for file: file1.py ---")

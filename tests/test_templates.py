@@ -13,6 +13,7 @@ def test_template_save_and_load():
         assert t.exists()
         assert t.get_content() == "Hello, world!"
 
+
 def test_template_directory_create_and_get():
     with tempfile.TemporaryDirectory() as tempdir:
         td = TemplateDirectory()
