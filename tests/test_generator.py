@@ -8,17 +8,20 @@ from core.models import Config, ModelConfig
 
 @pytest.fixture
 def dummy_args():
-    return MagicMock(detailed=False, instruction=None, template=None, template_file=None)
+    return MagicMock(
+        detailed=False, instruction=None, template=None, template_file=None
+    )
+
 
 @patch("core.generator.clean_diff", side_effect=lambda x: x)
 @patch("core.generator.clean_message", side_effect=lambda x: x)
 @patch("core.generator.ModelFactory.create_adapter")
 @patch("core.generator.Template")
 def test_generate_commit_message_success(
-    mock_template,  
-    mock_adapter_factory, 
+    mock_template,
+    mock_adapter_factory,
     mock_clean_message,
-    mock_clean_diff,  
+    mock_clean_diff,
     dummy_args,
 ):
     mock_config = MagicMock()
@@ -33,9 +36,9 @@ def test_generate_commit_message_success(
             is_free=False,
             context_length=2048,
             temperature=0.4,
-            description=""
+            description="",
         ),
-        "commit_template_path": "./templates/template.tpl"
+        "commit_template_path": "./templates/template.tpl",
     }
     mock_config.load_config.return_value = Config(**config_data)
     mock_config.load_model_config.return_value = config_data["model_config_data"]
