@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 from typing import Optional, Tuple
@@ -11,6 +12,8 @@ from core.constants import HELP_TEXT
 from core.generator import generate_commit_message
 from core.runner import SafeGitRunner
 from core.utils import is_safe_filename
+
+logger = logging.getLogger()
 
 
 @click.group()
@@ -157,4 +160,11 @@ def update_models() -> None:
 
 
 if __name__ == "__main__":
-    cli()
+    try:
+        cli()
+    except Exception as e:
+        import sys
+
+        logger.error(f"Error: {e}", exc_info=True)
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
