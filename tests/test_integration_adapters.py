@@ -16,10 +16,10 @@ def test_openrouter_generate_commit_message_real_api():
         name="real-model",
         provider="openrouter",
         api_base="https://openrouter.ai/api/v1",
-        model_id="qwen/qwen-2.5-72b-instruct:free", 
+        model_id="qwen/qwen-2.5-72b-instruct:free",
         is_free=False,
         context_length=150,
-        temperature=0.7
+        temperature=0.7,
     )
 
     os.environ["GITK_OPENROUTER_API_KEY"] = api_key
@@ -34,7 +34,7 @@ def test_openrouter_generate_commit_message_real_api():
         diff=diff_text,
         detailed=False,
         commit_template=commit_template,
-        instruction=instruction
+        instruction=instruction,
     )
 
     print("Generated commit message:", result)
