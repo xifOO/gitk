@@ -13,7 +13,7 @@ def test_modelconfig_build_model_config_valid():
             "is_free": False,
             "context_length": 1000,
             "temperature": 0.7,
-            "description": "test description"
+            "description": "test description",
         }
     }
 
@@ -43,7 +43,7 @@ def test_config_build_config(tmp_path):
         is_free=True,
         context_length=2048,
         temperature=0.4,
-        description="desc"
+        description="desc",
     )
     path = tmp_path / "template.txt"
     path.write_text("some content")
@@ -65,7 +65,7 @@ def test_config_save_and_load(tmp_path):
         is_free=True,
         context_length=2048,
         temperature=0.4,
-        description="desc"
+        description="desc",
     )
     path = tmp_path / "template.txt"
     path.write_text("some content")
