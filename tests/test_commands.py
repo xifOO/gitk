@@ -15,7 +15,9 @@ def runner():
 @patch("core.cli.commands.TemplatesCLI")
 @patch("core.cli.commands.ModelsCLI")
 @patch("core.cli.commands.ApiKeyCLI")
-def test_init_command(mock_api_key_cli, mock_models_cli, mock_templates_cli, mock_config_cls, runner):
+def test_init_command(
+    mock_api_key_cli, mock_models_cli, mock_templates_cli, mock_config_cls, runner
+):
     mock_config = MagicMock()
     mock_config_cls.return_value = mock_config
 
@@ -34,7 +36,9 @@ def test_init_command(mock_api_key_cli, mock_models_cli, mock_templates_cli, moc
     mock_models.select_model.assert_called_once()
     mock_api_key.setup_api_key.assert_called_once_with("mock-model")
     mock_templates.setup_interactive.assert_called_once()
-    mock_config.save_config.assert_called_once_with("mock-model", "mock-template", "mock-api-key")
+    mock_config.save_config.assert_called_once_with(
+        "mock-model", "mock-template", "mock-api-key"
+    )
     assert "GitK initialized." in result.output
 
 
@@ -60,7 +64,9 @@ def test_commit_command_no_split_confirm(
     mock_config = MagicMock()
     mock_config_cls.return_value = mock_config
 
-    mock_namespace.return_value = MagicMock(detailed=False, instruction=None, template=None, template_file=None, init=False)
+    mock_namespace.return_value = MagicMock(
+        detailed=False, instruction=None, template=None, template_file=None, init=False
+    )
 
     mock_subprocess_run.return_value = MagicMock(stdout="diff content", returncode=0)
     mock_generate_commit_message.return_value = "Commit message"
