@@ -9,7 +9,7 @@ class BaseError(Exception):
         self.message = message
         self.cause = cause
 
-        log_msg = f"{self.__class__.__name__}: {message}"
+        log_msg = message
         if cause:
             log_msg += f" | Cause: {repr(cause)}"
 
