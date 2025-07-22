@@ -5,12 +5,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseError(Exception):
-    def __init__(
-        self,
-        message: str,
-        *,
-        cause: Optional[Exception] = None
-    ) -> None:
+    def __init__(self, message: str, *, cause: Optional[Exception] = None) -> None:
         self.message = message
         self.cause = cause
 
@@ -26,17 +21,45 @@ class BaseError(Exception):
 
 
 class ModelConfigError(BaseError): ...
+
+
 class APIError(BaseError): ...
+
+
 class CacheFileError(BaseError): ...
+
+
 class EnvFileError(BaseError): ...
+
+
 class PathError(BaseError): ...
+
+
 class ConfigDirectoryError(PathError): ...
+
+
 class CacheDirectoryError(PathError): ...
+
+
 class ConfigFileError(BaseError): ...
+
+
 class TemplateError(BaseError): ...
+
+
 class TemplateLoadError(TemplateError): ...
-class TemplateSaveError(TemplateError): ... 
+
+
+class TemplateSaveError(TemplateError): ...
+
+
 class MissingAPIKeyError(BaseError): ...
+
+
 class UnsupportedProviderError(BaseError): ...
+
+
 class ProviderAPIError(BaseError): ...
+
+
 class ModelGenerationError(BaseError): ...
