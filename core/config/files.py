@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List
 
 from core.config.paths import CacheDirectory, ConfigDirectory
@@ -9,22 +10,40 @@ if TYPE_CHECKING:
     from core.models import ModelConfig
 
 
-class CacheFile:
+class BaseFile:
+
+    def __init__(self, file_path: Path) -> None:
+        self._file_path = file_path
+
+    def ensure(self) -> None:
+        self._file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def exists(self) -> bool:
+        return self._file_path.exists()
+
+    @property
+    def file_path(self) -> Path:
+        return self._file_path
+
+
+class CacheFile(BaseFile):
 
     def __init__(self, provider_name: str) -> None:
-        self._cache_dir = CacheDirectory()
-        self._cache_dir.ensure()
-        self.cache_file = self._cache_dir.get_cache_file_path(provider_name)
+        cache_dir = CacheDirectory()
+        cache_dir.ensure()
+        cache_file_path = cache_dir.get_cache_file_path(provider_name)
+        super().__init__(cache_file_path)
 
     def save_models(self, models: List["ModelConfig"]) -> None:
         try:
-            with open(self.cache_file, "w", encoding="utf-8") as f:
+            self.ensure()
+            with open(self.file_path, "w", encoding="utf-8") as f:
                 json.dump(
                     [m.model_dump() for m in models], f, ensure_ascii=False, indent=2
                 )
         except PermissionError as e:
             raise CacheFileError(
-                f"Permission denied writing to cache file: {self.cache_file}"
+                f"Permission denied writing to cache file: {self.file_path}"
             ) from e
         except OSError as e:
             raise CacheFileError("OS error writing to cache file", cause=e) from e
@@ -33,18 +52,18 @@ class CacheFile:
 
     def load_models(self) -> List["ModelConfig"]:
         try:
-            if not self.cache_file.exists():
+            if not self.exists():
                 return []
 
-            with open(self.cache_file, "r", encoding="utf-8") as f:
+            with open(self.file_path, "r", encoding="utf-8") as f:
                 try:
                     data = json.load(f)
                 except json.JSONDecodeError as e:
                     raise CacheFileError(
-                        f"Invalid JSON in cache file {self.cache_file}", cause=e
+                        f"Invalid JSON in cache file {self.file_path}", cause=e
                     ) from e
                 finally:
-                    self.cache_file.unlink()
+                    self.file_path.unlink()
 
             from core.models import ModelConfig
 
@@ -52,33 +71,34 @@ class CacheFile:
 
         except PermissionError as e:
             raise CacheFileError(
-                f"Permission denied reading cache file: {self.cache_file}"
+                f"Permission denied reading cache file: {self.file_path}"
             ) from e
         except OSError as e:
             raise CacheFileError("OS error reading cache file", cause=e) from e
 
     def delete_cache(self) -> None:
         try:
-            if self.cache_file.exists():
-                self.cache_file.unlink()
+            if self.exists():
+                self.file_path.unlink()
 
         except PermissionError as e:
             raise CacheFileError(
-                f"Permission denied delete cache file: {self.cache_file}"
+                f"Permission denied delete cache file: {self.file_path}"
             ) from e
         except OSError as e:
             raise CacheFileError("OS error delete cache file", cause=e) from e
 
 
-class EnvFile:
+class EnvFile(BaseFile):
 
     ENV_PREFIX = "GITK"
     ENV_HEADER = "# GitK API KEYS\n"
 
     def __init__(self) -> None:
-        self._config_dir = ConfigDirectory()
-        self._config_dir.ensure()
-        self.env_file = self._config_dir.config_dir() / ".env"
+        config_dir = ConfigDirectory()
+        config_dir.ensure()
+        env_file_path = config_dir.config_dir() / ".env"
+        super().__init__(env_file_path)
 
     def get_env_var_name(self, provider: str) -> str:
         return f"{self.ENV_PREFIX}_{provider.upper()}_API_KEY"
@@ -114,13 +134,13 @@ class EnvFile:
     def _read_env_file(self) -> Dict[str, str]:
         env_vars: Dict[str, str] = {}
 
-        if not self.env_file.exists():
+        if not self.exists():
             return env_vars
 
-        if self.env_file.stat().st_size == 0:
+        if self.file_path.stat().st_size == 0:
             return env_vars
         try:
-            with open(self.env_file, "r", encoding="utf-8") as f:
+            with open(self.file_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:
@@ -130,7 +150,7 @@ class EnvFile:
 
         except PermissionError as e:
             raise EnvFileError(
-                f"Permission denied reading env file: {self.env_file}"
+                f"Permission denied reading env file: {self.file_path}"
             ) from e
         except OSError as e:
             raise EnvFileError("OS error reading env file", cause=e) from e
@@ -141,14 +161,14 @@ class EnvFile:
 
     def _write_env_file(self, env_vars: Dict[str, str]) -> None:
         try:
-            with open(self.env_file, "w", encoding="utf-8") as f:
+            with open(self.file_path, "w", encoding="utf-8") as f:
                 f.write(self.ENV_HEADER)
                 for key, value in env_vars.items():
                     f.write(f"{key}={value}\n")
 
         except PermissionError as e:
             raise EnvFileError(
-                f"Permission denied writing to env file: {self.env_file}"
+                f"Permission denied writing to env file: {self.file_path}"
             ) from e
         except OSError as e:
             raise EnvFileError("OS error writing to env file", cause=e) from e
