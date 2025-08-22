@@ -16,7 +16,7 @@ idna==3.10
 iniconfig==2.1.0
 inquirer==3.4.0
 jiter==0.10.0
-openai==1.97.0
+openai==1.99.9
 packaging==25.0
 pluggy==1.6.0
 prompt_toolkit==3.0.51
@@ -32,7 +32,7 @@ pytest==8.4.1
 PyYAML==6.0.2
 questionary==2.1.0
 readchar==4.2.1
-regex==2024.11.6
+regex==2025.7.34
 requests==2.32.4
 rsa==4.9.1
 runs==1.2.2
@@ -45,7 +45,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 wcwidth==0.2.13
 xmod==1.8.1
-ruff==0.12.4
+ruff==0.12.9
 mypy==1.17.0
 click==8.2.1
   
