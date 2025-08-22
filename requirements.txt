@@ -5,7 +5,7 @@ click==8.2.1
 idna==3.10
 prompt_toolkit==3.0.51
 pydantic==2.11.7
-pydantic_core==2.33.2
+pydantic_core==2.39.0
 PyYAML==6.0.2
 questionary==2.1.0
 requests==2.32.5
