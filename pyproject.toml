@@ -7,14 +7,11 @@ name = "gitk"
 version = "0.1.0"
 description = "AI-powered CLI tool for generating git commit messages"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [{name = "xifOO", email = "wedyi28111@gmail.com"}]
 keywords = ["git", "commit", "ai", "cli"]
 classifiers = [
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "License :: OSI Approved :: MIT License",
@@ -43,12 +40,12 @@ dev = [
 
 [tool.black]
 line-length = 88
-target-version = ["py39"]
+target-version = ["py311"]
 skip-string-normalization = false
 skip-magic-trailing-comma = false
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
@@ -74,7 +71,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.mypy]
-python_version = 3.9
+python_version = 3.11
 disallow_untyped_defs = true
 check_untyped_defs = true
 ignore_missing_imports = true
