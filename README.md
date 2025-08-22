@@ -1,6 +1,6 @@
 # GitK
 
-**GitK** is a CLI tool built with Python 3.12 that leverages AI to generate meaningful commit messages based on your staged changes. It uses the OpenRouter provider to select AI models, helping you write better commits effortlessly.
+**GitK** is a CLI tool built with Python 3.11+ that leverages AI to generate meaningful commit messages based on your staged changes. It uses the OpenRouter provider to select AI models, helping you write better commits effortlessly.
 
 ---
 
