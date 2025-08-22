@@ -16,18 +16,8 @@
 
 ## Installation
 
-> ⚠️ **Note:** An official installer or package is not available yet.  
-> For now, clone the repo and install dependencies manually.
-
 ```bash
-git clone https://github.com/xifOO/gitk.git
-cd gitk
-
-python3.12 -m venv env
-source env/bin/activate  # Linux/macOS
-# env\Scripts\activate   # Windows
-
-pip install -r requirements.txt
+ pip install gitk
 ```
 
 ---
