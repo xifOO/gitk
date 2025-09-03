@@ -1,4 +1,5 @@
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import (
@@ -10,7 +11,6 @@ from typing import (
     List,
     Optional,
     Protocol,
-    Self,
     Type,
     TypeVar,
 )
@@ -31,6 +31,11 @@ from core.constants import (
     TOP_TIER_MODELS,
 )
 from core.exceptions import APIError, ModelConfigError
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 
 class ModelConfig(BaseModel):
