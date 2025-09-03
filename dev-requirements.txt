@@ -19,7 +19,7 @@ jiter==0.10.0
 openai==1.99.9
 packaging==25.0
 pluggy==1.6.0
-prompt_toolkit==3.0.51
+prompt_toolkit==3.0.52
 proto-plus==1.26.1
 protobuf==5.29.5
 pyasn1==0.6.1
