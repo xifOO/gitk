@@ -20,6 +20,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install build twine
     
+    - name: Clean previous builds
+      run: |
+        rm -rf dist/ build/ *.egg-info/
+    
     - name: Build package
       run: python -m build
     
