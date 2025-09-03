@@ -2,7 +2,7 @@ _DEFAULT_COMMIT_TEMPLATE: str = """ Requirements:
     - Use format: type: brief description
     - Types: feat, fix, docs, style, refactor, test, chore
     - Commit message must start with lowercase letter!
-    - First line (title) must be 50 characters or less
+    - Title line under 50 chars
 
     Examples:
     feat: add login validation

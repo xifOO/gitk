@@ -9,10 +9,10 @@ from core.exceptions import CacheFileError
 from core.models import ModelConfig
 
 
-def make_dummy_model():
+def make_dummy_model(model_id: str = "id1", name: str = "model1"):
     return ModelConfig(
-        model_id="id1",
-        name="model1",
+        model_id=model_id,
+        name=name,
         api_base="https://api",
         provider="test",
         description="",

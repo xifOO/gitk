@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("gitk")
 
 
 class BaseError(Exception):
