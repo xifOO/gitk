@@ -32,7 +32,7 @@ gitk = "core.cli.commands:cli"
 
 [project.optional-dependencies]
 dev = [
-  "black>=23.0,<24.0",
+  "black>=23.0,<26.0",
   "ruff>=0.1.0,<0.13.0",
   "mypy>=1.0,<2.0",
   "pytest>=7.0,<8.0"
