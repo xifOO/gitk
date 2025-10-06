@@ -2,7 +2,7 @@ annotated-types==0.7.0
 anyio==4.9.0
 blessed==1.21.0
 cachetools==6.1.0
-certifi==2025.7.14
+certifi==2025.10.5
 charset-normalizer==3.4.2
 distro==1.9.0
 editor==1.6.6
