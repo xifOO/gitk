@@ -9,6 +9,7 @@ from core.cli.args_parser import argparse
 from core.cli.cli import ApiKeyCLI, ModelsCLI, TemplatesCLI
 from core.config.config import GitkConfig
 from core.constants import HELP_TEXT
+from core.exceptions import BaseError
 from core.generator import generate_commit_message
 from core.runner import SafeGitRunner
 from core.utils import is_safe_filename
@@ -160,10 +161,13 @@ def update_models() -> None:
 
 
 def main() -> None:
+    import sys
+
     try:
         cli()
+    except BaseError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
     except Exception as e:
-        import sys
-
-        logger.error(f"Error: {e}", exc_info=True)
+        click.echo(f"Unexpected error: {e}", err=True)
         sys.exit(1)

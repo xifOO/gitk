@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 import requests
+from requests.adapters import HTTPAdapter, Retry
 
 from core.exceptions import (
     MissingAPIKeyError,
@@ -59,12 +60,34 @@ class ModelAdapter(ABC):
 
 class OpenRouterAdapter(ModelAdapter):
 
-    def __init__(self, config: ModelConfig):
+    def __init__(self, config: ModelConfig) -> None:
         super().__init__(config)
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
+        self.session = self._create_retryable_session()
+
+    def _create_retryable_session(self) -> requests.Session:
+        session = requests.Session()
+
+        retries = Retry(
+            total=5,
+            backoff_factor=1,
+            status_forcelist=[408, 500, 502, 503, 504],
+            allowed_methods=["POST"],
+            raise_on_status=False,
+            respect_retry_after_header=True,
+        )
+
+        adapter = HTTPAdapter(
+            pool_connections=10,
+            pool_maxsize=10,
+            max_retries=retries,
+        )
+
+        session.mount("https://", adapter)
+        return session
 
     def generate_commit_message(
         self,
@@ -88,7 +111,7 @@ class OpenRouterAdapter(ModelAdapter):
         }
 
         try:
-            response = requests.post(
+            response = self.session.post(
                 f"{self.config.api_base}/chat/completions",
                 headers=self.headers,
                 json=data,
@@ -96,19 +119,30 @@ class OpenRouterAdapter(ModelAdapter):
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            raise ProviderAPIError(
-                f"{self.config.provider} request error", cause=e
-            ) from e
-        except Exception as e:
-            raise ProviderAPIError(
-                "Unexpected error during API request", cause=e
-            ) from e
+            if e.response is None:
+                raise ProviderAPIError(
+                    "Network error - check connection", cause=e
+                ) from e
+
+            error_messages = {
+                401: "Authentication failed - check API key",
+                429: "Rate limit exceeded",
+                403: "Access denied - check API key permissions",
+            }
+            message = error_messages.get(
+                e.response.status_code, "Unexpected error during API request"
+            )
+            raise ProviderAPIError(f"{self.config.provider}: {message}", cause=e) from e
 
         try:
             result = response.json()
             return result["choices"][0]["message"]["content"].strip()
         except (KeyError, ValueError) as e:
             raise ModelGenerationError("Invalid API response format", cause=e) from e
+
+    def __del__(self) -> None:
+        if hasattr(self, "session"):
+            self.session.close()
 
 
 class ModelFactory:
