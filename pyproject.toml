@@ -29,6 +29,8 @@ black = ">=23.0,<26.0"
 ruff = ">=0.1.0,<0.13.0"
 mypy = ">=1.0,<2.0"
 pytest = ">=7.0,<8.0"
+types-requests = "^2.32.4.20250913"
+types-pyyaml = "^6.0.12.20250915"
 
 [tool.poetry.scripts]
 gitk = "core.cli.commands:cli"

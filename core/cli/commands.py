@@ -162,6 +162,7 @@ def update_models() -> None:
 
 def main() -> None:
     import sys
+
     try:
         cli()
     except BaseError as e:
