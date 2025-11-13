@@ -1,4 +1,10 @@
-# GitK
+# gitk
+
+<img src="assets/logo1.png" alt="GitK Logo" width="150">
+
+![PyPI](https://img.shields.io/pypi/v/gitk) 
+[![CI](https://github.com/xifOO/gitk/actions/workflows/tests.yaml/badge.svg)](https://github.com/xifOO/gitk/actions/workflows/tests.yaml)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/xifOO/gitk/blob/master/LICENSE)
 
 **GitK** is a CLI tool built with Python 3.11+ that leverages AI to generate meaningful commit messages based on your staged changes. It uses the OpenRouter provider to select AI models, helping you write better commits effortlessly.
 
